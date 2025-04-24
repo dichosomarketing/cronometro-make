@@ -5,12 +5,14 @@
   <title>Cronómetro Deportivo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Orbitron', sans-serif;
       background: #0f0f0f;
-      color: #f1f1f1;
+      color: #99ccff;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -21,61 +23,76 @@
     h1 {
       color: #00ffc3;
       margin-bottom: 20px;
-      font-size: 2rem;
+      font-size: 2.5rem;
+      text-shadow: 0 0 10px #00ffc3;
     }
 
     .container {
       background: #1a1a1a;
       padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 255, 195, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 195, 0.3);
       text-align: center;
       width: 90%;
-      max-width: 400px;
+      max-width: 450px;
     }
 
-    input[type="number"], input[type="text"] {
+    input[type="number"], input[type="text"], textarea {
       background: #111;
-      border: 1px solid #00ffc3;
+      border: 1px solid #00bfff;
       color: #fff;
       padding: 10px;
-      font-size: 1.2em;
-      margin: 8px 5px;
+      font-size: 1.1em;
       border-radius: 10px;
-      width: 80px;
       text-align: center;
+      margin: 5px;
     }
 
-    input[type="text"] {
+    input[type="number"] {
+      width: 80px;
+    }
+
+    input[type="text"], textarea {
       width: 90%;
+    }
+
+    textarea {
+      resize: none;
+      margin-top: 10px;
     }
 
     button {
       background-color: #00ffc3;
       border: none;
       color: #0f0f0f;
-      padding: 12px 24px;
+      padding: 10px 20px;
       font-size: 1.1em;
       border-radius: 10px;
       cursor: pointer;
-      margin-top: 10px;
+      margin: 10px 5px;
       transition: background 0.3s;
     }
 
     button:hover {
-      background-color: #00e6b3;
+      background-color: #00dab0;
     }
 
     #contador {
-      font-size: 2.8em;
-      margin-top: 30px;
+      font-size: 3em;
+      margin-top: 25px;
       font-weight: bold;
       color: #00ffc3;
+      text-shadow: 0 0 10px #00ffc3;
     }
 
     #info {
       margin-top: 20px;
-      font-size: 1.1em;
+      font-size: 1.2em;
+      line-height: 1.6;
+    }
+
+    .botones-control {
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -90,61 +107,116 @@
         <input id="segundos" type="number" min="0" max="59" value="0">
       </div>
       <input id="proyectoInput" type="text" placeholder="Nombre del proyecto"><br>
+      <textarea id="notasInput" rows="3" placeholder="Notas (opcional)"></textarea><br>
       <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
     </div>
 
     <div id="info"></div>
     <div id="contador"></div>
+    <div class="botones-control" style="display:none;" id="botonesControl">
+      <button onclick="pausarReanudar()" id="pausaBtn">⏸ Pausar</button>
+      <button onclick="reiniciar()">🔁 Reiniciar</button>
+    </div>
   </div>
 
   <script>
-    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // Sustituye por tu URL de Make
+    const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
+    let tiempoRestante = 0;
+    let intervalo = null;
+    let tiempoInicial = 0;
+    let pausado = false;
+
+    let datos = {
+      horas: 0,
+      minutos: 0,
+      segundos: 0,
+      proyecto: '',
+      notas: '',
+      usuario: 'dichoso'
+    };
 
     function iniciarCronometro() {
-      const h = parseInt(document.getElementById("horas").value) || 0;
-      const m = parseInt(document.getElementById("minutos").value) || 0;
-      const s = parseInt(document.getElementById("segundos").value) || 0;
-      const proyecto = document.getElementById("proyectoInput").value || "sin nombre";
-      const usuario = "dichoso"; // Personalizable
+      datos.horas = parseInt(document.getElementById("horas").value) || 0;
+      datos.minutos = parseInt(document.getElementById("minutos").value) || 0;
+      datos.segundos = parseInt(document.getElementById("segundos").value) || 0;
+      datos.proyecto = document.getElementById("proyectoInput").value || "sin nombre";
+      datos.notas = document.getElementById("notasInput").value || "";
 
-      const duracion = h * 3600 + m * 60 + s;
-      if (duracion <= 0) {
+      tiempoInicial = datos.horas * 3600 + datos.minutos * 60 + datos.segundos;
+      if (tiempoInicial <= 0) {
         alert("Introduce un tiempo válido.");
         return;
       }
 
+      tiempoRestante = tiempoInicial;
       document.getElementById("formulario").style.display = "none";
+      document.getElementById("botonesControl").style.display = "block";
 
-      document.getElementById("info").innerHTML = `
-        ⏱ <strong>${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</strong><br>
-        📁 Proyecto: <strong>${proyecto}</strong>
-      `;
+      mostrarInfo();
+      iniciarIntervalo();
+    }
 
-      let tiempoRestante = duracion;
-      const intervalo = setInterval(() => {
-        const hrs = Math.floor(tiempoRestante / 3600);
-        const mins = Math.floor((tiempoRestante % 3600) / 60);
-        const secs = tiempoRestante % 60;
-        document.getElementById("contador").textContent =
-          `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-
+    function iniciarIntervalo() {
+      intervalo = setInterval(() => {
+        mostrarTiempo();
         if (tiempoRestante <= 0) {
           clearInterval(intervalo);
           document.getElementById("contador").textContent = "¡Tiempo terminado!";
-          fetch(webhook, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              usuario: usuario,
-              proyecto: proyecto,
-              duracion_original: `${h}:${m}:${s}`,
-              terminado_en: new Date().toISOString()
-            })
-          });
+          enviarWebhook();
         }
-
         tiempoRestante--;
       }, 1000);
+    }
+
+    function mostrarTiempo() {
+      const hrs = Math.floor(tiempoRestante / 3600);
+      const mins = Math.floor((tiempoRestante % 3600) / 60);
+      const secs = tiempoRestante % 60;
+      document.getElementById("contador").textContent =
+        `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function mostrarInfo() {
+      document.getElementById("info").innerHTML = `
+        ⏱ <strong style="font-size: 1.5em">${datos.horas.toString().padStart(2, '0')}:${datos.minutos.toString().padStart(2, '0')}:${datos.segundos.toString().padStart(2, '0')}</strong><br>
+        📁 <strong style="font-size: 1.4em">${datos.proyecto}</strong><br>
+        📝 <em>${datos.notas}</em>
+      `;
+    }
+
+    function pausarReanudar() {
+      if (!pausado) {
+        clearInterval(intervalo);
+        pausado = true;
+        document.getElementById("pausaBtn").textContent = "▶️ Reanudar";
+      } else {
+        pausado = false;
+        document.getElementById("pausaBtn").textContent = "⏸ Pausar";
+        iniciarIntervalo();
+      }
+    }
+
+    function reiniciar() {
+      clearInterval(intervalo);
+      tiempoRestante = tiempoInicial;
+      pausado = false;
+      document.getElementById("pausaBtn").textContent = "⏸ Pausar";
+      mostrarTiempo();
+      iniciarIntervalo();
+    }
+
+    function enviarWebhook() {
+      fetch(webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario: datos.usuario,
+          proyecto: datos.proyecto,
+          duracion_original: `${datos.horas}:${datos.minutos}:${datos.segundos}`,
+          notas: datos.notas,
+          terminado_en: new Date().toISOString()
+        })
+      });
     }
   </script>
 </body>
