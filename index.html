@@ -6,40 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
-
     body {
       margin: 0;
       padding: 0;
       font-family: 'Orbitron', sans-serif;
       background: #0f0f0f;
-      color: #99ccff;
+      color: #00558c;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      position: relative;
     }
-
     h1 {
-      color: #00ffc3;
+      color: #00558c;
       margin-bottom: 20px;
       font-size: 2.5rem;
-      text-shadow: 0 0 10px #00ffc3;
+      text-shadow: 0 0 10px #00558c;
     }
-
     .container {
       background: #1a1a1a;
       padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 255, 195, 0.3);
+      box-shadow: 0 0 20px rgba(0, 85, 140, 0.3);
       text-align: center;
       width: 90%;
       max-width: 450px;
     }
-
-    input[type="number"], input[type="text"], textarea {
+    input, textarea {
       background: #111;
-      border: 1px solid #00bfff;
+      border: 1px solid #00558c;
       color: #fff;
       padding: 10px;
       font-size: 1.1em;
@@ -47,24 +44,13 @@
       text-align: center;
       margin: 5px;
     }
-
-    input[type="number"] {
-      width: 80px;
-    }
-
-    input[type="text"], textarea {
-      width: 90%;
-    }
-
-    textarea {
-      resize: none;
-      margin-top: 10px;
-    }
-
+    input[type="number"] { width: 80px; }
+    input[type="text"], textarea { width: 90%; }
+    textarea { resize: none; margin-top: 10px; }
     button {
-      background-color: #00ffc3;
+      background-color: #00558c;
       border: none;
-      color: #0f0f0f;
+      color: #fff;
       padding: 10px 20px;
       font-size: 1.1em;
       border-radius: 10px;
@@ -72,35 +58,41 @@
       margin: 10px 5px;
       transition: background 0.3s;
     }
-
-    button:hover {
-      background-color: #00dab0;
-    }
-
+    button:hover { background-color: #00436e; }
     #contador {
       font-size: 3em;
       margin-top: 25px;
       font-weight: bold;
-      color: #00ffc3;
-      text-shadow: 0 0 10px #00ffc3;
+      color: #00558c;
+      text-shadow: 0 0 10px #00558c;
     }
-
     #info {
       margin-top: 20px;
       font-size: 1.2em;
       line-height: 1.6;
     }
-
-    .botones-control {
-      margin-top: 20px;
+    .botones-control { margin-top: 20px; }
+    #volverBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #003d66;
+      padding: 6px 12px;
+      font-size: 0.9em;
+      border-radius: 8px;
     }
+    #volverBtn:hover { background-color: #002f4d; }
   </style>
 </head>
 <body>
+  <button id="volverBtn" onclick="volverAlInicio()" style="display: none;">↩ Volver</button>
   <div class="container">
     <h1>⏱ Cronómetro de Proyecto</h1>
-
-    <div id="formulario">
+    <div id="modoSeleccion">
+      <button onclick="seleccionarModo('regresivo')">Especificar tiempo</button>
+      <button onclick="seleccionarModo('progresivo')">Empezar a contar</button>
+    </div>
+    <div id="formulario" style="display:none;">
       <div>
         <input id="horas" type="number" min="0" value="0"> :
         <input id="minutos" type="number" min="0" max="59" value="0"> :
@@ -110,113 +102,132 @@
       <textarea id="notasInput" rows="3" placeholder="Notas (opcional)"></textarea><br>
       <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
     </div>
-
+    <div id="progresivo" style="display:none;">
+      <input id="proyectoProg" type="text" placeholder="Nombre del proyecto"><br>
+      <textarea id="notasProg" rows="3" placeholder="Notas (opcional)"></textarea><br>
+      <button onclick="iniciarProgresivo()" id="botonIniciarProg">▶️ Empezar</button>
+      <button onclick="pausarProgresivo()" style="display:none;" id="botonPausaProg">⏸ Pausar</button>
+      <button onclick="reiniciarProgresivo()" style="display:none;" id="botonReiniciarProg">🔁 Reiniciar</button>
+      <button onclick="detenerProgresivo()" style="display:none;" id="botonDetener">⏹ Detener y enviar</button>
+    </div>
     <div id="info"></div>
     <div id="contador"></div>
-    <div class="botones-control" style="display:none;" id="botonesControl">
-      <button onclick="pausarReanudar()" id="pausaBtn">⏸ Pausar</button>
-      <button onclick="reiniciar()">🔁 Reiniciar</button>
-    </div>
   </div>
 
   <script>
     const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
-    let tiempoRestante = 0;
-    let intervalo = null;
-    let tiempoInicial = 0;
-    let pausado = false;
+    let tiempoRestante = 0, tiempoInicial = 0, intervalo = null, pausado = false, contadorSegundos = 0;
+    let modo = '';
 
-    let datos = {
-      horas: 0,
-      minutos: 0,
-      segundos: 0,
-      proyecto: '',
-      notas: '',
-      usuario: 'dichoso'
-    };
-
-    function iniciarCronometro() {
-      datos.horas = parseInt(document.getElementById("horas").value) || 0;
-      datos.minutos = parseInt(document.getElementById("minutos").value) || 0;
-      datos.segundos = parseInt(document.getElementById("segundos").value) || 0;
-      datos.proyecto = document.getElementById("proyectoInput").value || "sin nombre";
-      datos.notas = document.getElementById("notasInput").value || "";
-
-      tiempoInicial = datos.horas * 3600 + datos.minutos * 60 + datos.segundos;
-      if (tiempoInicial <= 0) {
-        alert("Introduce un tiempo válido.");
-        return;
+    function seleccionarModo(seleccionado) {
+      modo = seleccionado;
+      document.getElementById("modoSeleccion").style.display = "none";
+      document.getElementById("volverBtn").style.display = "block";
+      if (modo === 'regresivo') {
+        document.getElementById("formulario").style.display = "block";
+      } else {
+        document.getElementById("progresivo").style.display = "block";
       }
-
-      tiempoRestante = tiempoInicial;
-      document.getElementById("formulario").style.display = "none";
-      document.getElementById("botonesControl").style.display = "block";
-
-      mostrarInfo();
-      iniciarIntervalo();
     }
 
-    function iniciarIntervalo() {
+    function iniciarCronometro() {
+      let horas = parseInt(document.getElementById("horas").value) || 0;
+      let minutos = parseInt(document.getElementById("minutos").value) || 0;
+      let segundos = parseInt(document.getElementById("segundos").value) || 0;
+      let proyecto = document.getElementById("proyectoInput").value || "sin nombre";
+      let notas = document.getElementById("notasInput").value || "";
+
+      tiempoInicial = horas * 3600 + minutos * 60 + segundos;
+      tiempoRestante = tiempoInicial;
+      mostrarInfo(horas, minutos, segundos, proyecto, notas);
+
       intervalo = setInterval(() => {
-        mostrarTiempo();
+        mostrarTiempo(tiempoRestante);
         if (tiempoRestante <= 0) {
           clearInterval(intervalo);
           document.getElementById("contador").textContent = "¡Tiempo terminado!";
-          enviarWebhook();
+          enviarWebhook(proyecto, notas, tiempoInicial);
         }
         tiempoRestante--;
       }, 1000);
     }
 
-    function mostrarTiempo() {
-      const hrs = Math.floor(tiempoRestante / 3600);
-      const mins = Math.floor((tiempoRestante % 3600) / 60);
-      const secs = tiempoRestante % 60;
-      document.getElementById("contador").textContent =
-        `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    function iniciarProgresivo() {
+      contadorSegundos = 0;
+      pausado = false;
+      document.getElementById("botonIniciarProg").style.display = "none";
+      document.getElementById("botonPausaProg").style.display = "inline-block";
+      document.getElementById("botonReiniciarProg").style.display = "inline-block";
+      document.getElementById("botonDetener").style.display = "inline-block";
+      intervalo = setInterval(() => {
+        contadorSegundos++;
+        mostrarTiempo(contadorSegundos);
+      }, 1000);
     }
 
-    function mostrarInfo() {
-      document.getElementById("info").innerHTML = `
-        ⏱ <strong style="font-size: 1.5em">${datos.horas.toString().padStart(2, '0')}:${datos.minutos.toString().padStart(2, '0')}:${datos.segundos.toString().padStart(2, '0')}</strong><br>
-        📁 <strong style="font-size: 1.4em">${datos.proyecto}</strong><br>
-        📝 <em>${datos.notas}</em>
-      `;
-    }
-
-    function pausarReanudar() {
+    function pausarProgresivo() {
       if (!pausado) {
         clearInterval(intervalo);
         pausado = true;
-        document.getElementById("pausaBtn").textContent = "▶️ Reanudar";
+        document.getElementById("botonPausaProg").textContent = "▶️ Reanudar";
       } else {
+        iniciarProgresivo();
         pausado = false;
-        document.getElementById("pausaBtn").textContent = "⏸ Pausar";
-        iniciarIntervalo();
+        document.getElementById("botonPausaProg").textContent = "⏸ Pausar";
       }
     }
 
-    function reiniciar() {
+    function reiniciarProgresivo() {
       clearInterval(intervalo);
-      tiempoRestante = tiempoInicial;
-      pausado = false;
-      document.getElementById("pausaBtn").textContent = "⏸ Pausar";
-      mostrarTiempo();
-      iniciarIntervalo();
+      contadorSegundos = 0;
+      mostrarTiempo(0);
+      iniciarProgresivo();
     }
 
-    function enviarWebhook() {
+    function detenerProgresivo() {
+      clearInterval(intervalo);
+      let proyecto = document.getElementById("proyectoProg").value || "sin nombre";
+      let notas = document.getElementById("notasProg").value || "";
+      enviarWebhook(proyecto, notas, contadorSegundos);
+      document.getElementById("contador").textContent = "Enviado ✅";
+    }
+
+    function mostrarTiempo(segundos) {
+      const hrs = Math.floor(segundos / 3600);
+      const mins = Math.floor((segundos % 3600) / 60);
+      const secs = segundos % 60;
+      document.getElementById("contador").textContent = `${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+
+    function mostrarInfo(h, m, s, proyecto, notas) {
+      document.getElementById("info").innerHTML = `
+        ⏱ <strong style="font-size: 1.5em">${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</strong><br>
+        📁 <strong style="font-size: 1.4em">${proyecto}</strong><br>
+        📝 <em>${notas}</em>`;
+    }
+
+    function enviarWebhook(proyecto, notas, duracionSegundos) {
       fetch(webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          usuario: datos.usuario,
-          proyecto: datos.proyecto,
-          duracion_original: `${datos.horas}:${datos.minutos}:${datos.segundos}`,
-          notas: datos.notas,
+          usuario: 'dichoso',
+          proyecto: proyecto,
+          notas: notas,
+          duracion_segundos: duracionSegundos,
           terminado_en: new Date().toISOString()
         })
       });
+    }
+
+    function volverAlInicio() {
+      clearInterval(intervalo);
+      document.getElementById("modoSeleccion").style.display = "block";
+      document.getElementById("formulario").style.display = "none";
+      document.getElementById("progresivo").style.display = "none";
+      document.getElementById("info").innerHTML = "";
+      document.getElementById("contador").textContent = "";
+      document.getElementById("volverBtn").style.display = "none";
     }
   </script>
 </body>
