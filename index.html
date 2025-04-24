@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cronómetro</title>
+  <title>Cronómetro de Proyecto</title>
   <meta charset="UTF-8">
   <style>
     body { font-family: sans-serif; text-align: center; padding: 40px; }
-    #contador { font-size: 3em; margin: 40px; }
+    #contador { font-size: 3em; margin: 20px; }
+    #info { font-size: 1.5em; margin-top: 30px; }
   </style>
   <script>
     const params = new URLSearchParams(window.location.search);
     const duracion = parseInt(params.get("tiempo") || "60"); // en segundos
     const usuario = params.get("usuario") || "desconocido";
-    const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
+    const proyecto = params.get("proyecto") || "sin proyecto";
+    const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj"; // Sustituye con el tuyo
 
     let tiempoRestante = duracion;
 
     function iniciarCuentaAtras() {
+      document.getElementById("info").innerHTML = `
+        <div>⏱ Tiempo: <strong>${Math.floor(duracion / 60)} minutos</strong></div>
+        <div>📁 Proyecto: <strong>${proyecto}</strong></div>
+      `;
       const intervalo = setInterval(() => {
-        document.getElementById("contador").textContent = `${tiempoRestante} segundos`;
+        document.getElementById("contador").textContent = `${tiempoRestante} segundos restantes`;
         if (tiempoRestante <= 0) {
           clearInterval(intervalo);
           document.getElementById("contador").textContent = "¡Tiempo terminado!";
@@ -27,6 +33,7 @@
             body: JSON.stringify({
               usuario: usuario,
               duracion: duracion,
+              proyecto: proyecto,
               terminado_en: new Date().toISOString()
             })
           });
@@ -40,6 +47,7 @@
 </head>
 <body>
   <h1>Cronómetro activo</h1>
+  <div id="info"></div>
   <div id="contador">Cargando...</div>
 </body>
 </html>
