@@ -1,29 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cronómetro de Proyecto</title>
   <meta charset="UTF-8">
+  <title>Cronómetro de Proyecto</title>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 40px; }
-    #contador { font-size: 3em; margin: 20px; }
-    #info { font-size: 1.5em; margin-top: 30px; }
+    #formulario, #contador, #info { margin-top: 20px; }
+    input { padding: 10px; font-size: 1em; margin: 5px; width: 200px; }
+    button { padding: 10px 20px; font-size: 1em; cursor: pointer; }
+    #contador { font-size: 2.5em; margin-top: 30px; }
   </style>
+</head>
+<body>
+  <h1>🕒 Cronómetro por Proyecto</h1>
+
+  <div id="formulario">
+    <input id="tiempoInput" type="number" placeholder="Tiempo en minutos"><br>
+    <input id="proyectoInput" type="text" placeholder="Nombre del proyecto"><br>
+    <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
+  </div>
+
+  <div id="info"></div>
+  <div id="contador"></div>
+
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const duracion = parseInt(params.get("tiempo") || "60"); // en segundos
-    const usuario = params.get("usuario") || "desconocido";
-    const proyecto = params.get("proyecto") || "sin proyecto";
-    const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj"; // Sustituye con el tuyo
+    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // ← Sustituye con tu webhook real
 
-    let tiempoRestante = duracion;
+    function iniciarCronometro() {
+      const tiempoMin = parseInt(document.getElementById("tiempoInput").value);
+      const proyecto = document.getElementById("proyectoInput").value || "sin nombre";
+      const usuario = "dichoso"; // Puedes personalizarlo o hacerlo variable
 
-    function iniciarCuentaAtras() {
+      if (!tiempoMin || tiempoMin <= 0) {
+        alert("Introduce un tiempo válido");
+        return;
+      }
+
+      // Ocultar formulario
+      document.getElementById("formulario").style.display = "none";
+
+      const duracion = tiempoMin * 60;
+      let tiempoRestante = duracion;
+
       document.getElementById("info").innerHTML = `
-        <div>⏱ Tiempo: <strong>${Math.floor(duracion / 60)} minutos</strong></div>
-        <div>📁 Proyecto: <strong>${proyecto}</strong></div>
+        ⏱ Tiempo: <strong>${tiempoMin} minutos</strong><br>
+        📁 Proyecto: <strong>${proyecto}</strong>
       `;
+
       const intervalo = setInterval(() => {
         document.getElementById("contador").textContent = `${tiempoRestante} segundos restantes`;
+
         if (tiempoRestante <= 0) {
           clearInterval(intervalo);
           document.getElementById("contador").textContent = "¡Tiempo terminado!";
@@ -38,16 +64,10 @@
             })
           });
         }
+
         tiempoRestante--;
       }, 1000);
     }
-
-    window.onload = iniciarCuentaAtras;
   </script>
-</head>
-<body>
-  <h1>Cronómetro activo</h1>
-  <div id="info"></div>
-  <div id="contador">Cargando...</div>
 </body>
 </html>
