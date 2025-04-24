@@ -16,7 +16,7 @@
     textarea{resize:none}
     button{background:#00558c;border:none;cursor:pointer}
     button:hover{background:#00436e}
-    select{cursor:pointer}               /* mismo look-and-feel */
+    select{cursor:pointer}
     #contador{font-size:3em;margin-top:25px;font-weight:bold;color:#00558c;text-shadow:0 0 10px #00558c}
     #info{margin-top:18px;font-size:1.1em;line-height:1.5}
     #result{margin-top:18px;font-size:1.05em;border-top:1px solid #00558c;padding-top:14px}
@@ -45,7 +45,6 @@
         <input id="minutos" type="number" min="0" max="59" value="0"> :
         <input id="segundos" type="number" min="0" max="59" value="0">
       </div>
-      <!-- Campo + flechita -->
       <input id="proyectoInput" type="text" placeholder="Nombre del proyecto">
       <select id="proyectoSelect"></select><br>
       <textarea id="notasInput" rows="3" placeholder="Notas (opcional)"></textarea><br>
@@ -89,7 +88,7 @@
   </div>
 
 <script>
-/* -------------- TUS FUNCIONES ORIGINALES (sin tocar) -------------- */
+/* --------- Código original intacto --------- */
 const webhook="https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
 let intervalo=null, modo="";
 let tiempoRest=0, tiempoInit=0, regPaused=false, regProyecto='', regNotas='';
@@ -122,38 +121,45 @@ function openModal(p,n,d){pendProy=p;pendNotas=n;pendDur=d;confirmSend.style.dis
 function wantSummary(){resumenInput.style.display='block';btnYes.style.display='none';btnNo.style.display='none';btnSendSummary.style.display='inline-block';}
 function sendNow(withResumen){const resumen=withResumen?resumenInput.value.trim():'';enviarWebhook(pendProy,pendNotas,pendDur,resumen);confirmSend.style.display='none';contador.textContent='Enviado ✅';showResult(pendProy,pendNotas,pendDur,resumen);}
 
-/* -------- NUEVO: Cargar lista de proyectos y sin tocar nada más -------- */
+/* ----------- NUEVO: refresco automático de proyectos ----------- */
 const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsiFYl6h93jHlDyTmj8IPY84zu5WQiVNbhB4RUQ6oOBi3pECs8zKufnAFcPMHIIH0neK6x0NVjsFjL/pub?output=csv';
+const REFRESH_MS = 30_000; // 30 s  (ajusta si quieres)
 
-function rellenarSelect(selectEl){
-  fetch(SHEET_CSV)
+function rellenarSelect(sel){
+  fetch(SHEET_CSV + '&t=' + Date.now())   // Date.now() evita caché
     .then(r=>r.text())
     .then(txt=>{
-      const filas = txt.split('\n').slice(1); // saltar cabecera
-      filas.forEach(f=>{
-        const nombre = f.split(',')[0]?.trim();
-        if(nombre){
-          const opt = document.createElement('option');
-          opt.value = nombre;
-          opt.textContent = nombre;
-          selectEl.appendChild(opt);
-        }
-      });
+      const nuevos = txt.split('\n').slice(1)
+                        .map(l=>l.split(',')[0]?.trim())
+                        .filter(Boolean);
+      const actuales = Array.from(sel.options).slice(1).map(o=>o.value);
+
+      if (JSON.stringify(nuevos) !== JSON.stringify(actuales)) {
+        sel.length = 0;                            // limpiar todo
+        nuevos.forEach(p=>sel.add(new Option(p,p)));
+        console.log('↻ Proyectos actualizados');
+      }
     })
     .catch(e=>console.error('Error cargando proyectos:',e));
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  // Regresivo
+  // primera carga
   rellenarSelect(proyectoSelect);
+  rellenarSelect(proyectoSelectProg);
+
   proyectoSelect.addEventListener('change',e=>{
     if(e.target.value) proyectoInput.value = e.target.value;
   });
-  // Progresivo
-  rellenarSelect(proyectoSelectProg);
   proyectoSelectProg.addEventListener('change',e=>{
     if(e.target.value) proyectoProg.value = e.target.value;
   });
+
+  // refresco periódico
+  setInterval(()=>{
+    rellenarSelect(proyectoSelect);
+    rellenarSelect(proyectoSelectProg);
+  }, REFRESH_MS);
 });
 </script>
 </body>
