@@ -6,92 +6,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: #0f0f0f;
-      color: #00558c;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      position: relative;
-    }
-    h1 {
-      color: #00558c;
-      margin-bottom: 20px;
-      font-size: 2.5rem;
-      text-shadow: 0 0 10px #00558c;
-    }
-    .container {
-      background: #1a1a1a;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 85, 140, 0.3);
-      text-align: center;
-      width: 90%;
-      max-width: 450px;
-    }
-    input, textarea {
-      background: #111;
-      border: 1px solid #00558c;
-      color: #fff;
-      padding: 10px;
-      font-size: 1.1em;
-      border-radius: 10px;
-      text-align: center;
-      margin: 5px;
-    }
-    input[type="number"] { width: 80px; }
-    input[type="text"], textarea { width: 90%; }
-    textarea { resize: none; margin-top: 10px; }
-    button {
-      background-color: #00558c;
-      border: none;
-      color: #fff;
-      padding: 10px 20px;
-      font-size: 1.1em;
-      border-radius: 10px;
-      cursor: pointer;
-      margin: 10px 5px;
-      transition: background 0.3s;
-    }
-    button:hover { background-color: #00436e; }
-    #contador {
-      font-size: 3em;
-      margin-top: 25px;
-      font-weight: bold;
-      color: #00558c;
-      text-shadow: 0 0 10px #00558c;
-    }
-    #info {
-      margin-top: 20px;
-      font-size: 1.2em;
-      line-height: 1.6;
-    }
-    .botones-control { margin-top: 20px; }
-    #volverBtn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #003d66;
-      padding: 6px 12px;
-      font-size: 0.9em;
-      border-radius: 8px;
-    }
-    #volverBtn:hover { background-color: #002f4d; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Orbitron',sans-serif;background:#0f0f0f;color:#00558c;display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative}
+    h1{font-size:2.4rem;margin-bottom:20px;color:#00558c;text-shadow:0 0 10px #00558c}
+    .container{background:#1a1a1a;width:90%;max-width:520px;padding:30px;border-radius:20px;text-align:center;box-shadow:0 0 20px rgba(0,85,140,.35)}
+    input,textarea,button{border-radius:10px;font-size:1.05rem;padding:10px;margin:6px;color:#fff}
+    input,textarea{background:#111;border:1px solid #00558c;width:90%;text-align:center}
+    input[type="number"]{width:80px}
+    textarea{resize:none}
+    button{background:#00558c;border:none;cursor:pointer}
+    button:hover{background:#00436e}
+    #contador{font-size:3em;margin-top:25px;font-weight:bold;color:#00558c;text-shadow:0 0 10px #00558c}
+    #info{margin-top:18px;font-size:1.1em;line-height:1.5}
+    #result{margin-top:18px;font-size:1.05em;border-top:1px solid #00558c;padding-top:14px}
+    #volverBtn{position:absolute;top:18px;right:18px;background:#003d66;font-size:.9em;display:none}
+    #volverBtn:hover{background:#002f4d}
+    /* modal */
+    #confirmSend{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;z-index:10}
+    .modal{background:#1a1a1a;padding:20px;border-radius:15px;width:90%;max-width:380px;box-shadow:0 0 15px rgba(0,85,140,.5)}
+    .modal textarea{width:100%;margin-top:8px;background:#111;border:1px solid #00558c}
   </style>
 </head>
 <body>
-  <button id="volverBtn" onclick="volverAlInicio()" style="display: none;">↩ Volver</button>
+  <button id="volverBtn" onclick="volverAlInicio()">↩ Volver</button>
   <div class="container">
     <h1>⏱ Cronómetro de Proyecto</h1>
+
     <div id="modoSeleccion">
       <button onclick="seleccionarModo('regresivo')">Especificar tiempo</button>
       <button onclick="seleccionarModo('progresivo')">Empezar a contar</button>
     </div>
+
+    <!-- Regresivo form -->
     <div id="formulario" style="display:none;">
       <div>
         <input id="horas" type="number" min="0" value="0"> :
@@ -100,135 +46,86 @@
       </div>
       <input id="proyectoInput" type="text" placeholder="Nombre del proyecto"><br>
       <textarea id="notasInput" rows="3" placeholder="Notas (opcional)"></textarea><br>
-      <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
+      <button onclick="iniciarRegresivo()">Iniciar cronómetro</button>
     </div>
+
+    <!-- Regresivo controls -->
+    <div id="regControls" style="display:none;">
+      <button id="btnPauseReg" onclick="togglePauseReg()">⏸ Pausar</button>
+      <button id="btnResetReg" onclick="resetReg()">🔁 Reiniciar</button>
+      <button id="btnSendReg" onclick="prepareSendReg()">⏹ Enviar</button>
+    </div>
+
+    <!-- Progresivo controls -->
     <div id="progresivo" style="display:none;">
       <input id="proyectoProg" type="text" placeholder="Nombre del proyecto"><br>
       <textarea id="notasProg" rows="3" placeholder="Notas (opcional)"></textarea><br>
-      <button onclick="iniciarProgresivo()" id="botonIniciarProg">▶️ Empezar</button>
-      <button onclick="pausarProgresivo()" style="display:none;" id="botonPausaProg">⏸ Pausar</button>
-      <button onclick="reiniciarProgresivo()" style="display:none;" id="botonReiniciarProg">🔁 Reiniciar</button>
-      <button onclick="detenerProgresivo()" style="display:none;" id="botonDetener">⏹ Detener y enviar</button>
+      <button id="btnStartProg" onclick="startProgresivo()">▶️ Empezar</button>
+      <button id="btnPauseProg" onclick="togglePauseProg()" style="display:none;">⏸ Pausar</button>
+      <button id="btnResetProg" onclick="resetProg()" style="display:none;">🔁 Reiniciar</button>
+      <button id="btnStopProg" onclick="prepareSendProg()" style="display:none;">⏹ Enviar</button>
     </div>
+
     <div id="info"></div>
     <div id="contador"></div>
+    <div id="result"></div>
   </div>
 
-  <script>
-    const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
-    let tiempoRestante = 0, tiempoInicial = 0, intervalo = null, pausado = false, contadorSegundos = 0;
-    let modo = '';
+  <!-- Modal confirmación -->
+  <div id="confirmSend">
+    <div class="modal">
+      <div id="confirmText">¿Quieres añadir un resumen de lo que has hecho?</div>
+      <textarea id="resumenInput" rows="3" placeholder="Escribe tu resumen..." style="display:none;"></textarea>
+      <div style="margin-top:15px;">
+        <button id="btnNo" onclick="sendNow(false)">No</button>
+        <button id="btnYes" onclick="wantSummary()">Sí</button>
+        <button id="btnSendSummary" style="display:none;" onclick="sendNow(true)">Enviar</button>
+      </div>
+    </div>
+  </div>
 
-    function seleccionarModo(seleccionado) {
-      modo = seleccionado;
-      document.getElementById("modoSeleccion").style.display = "none";
-      document.getElementById("volverBtn").style.display = "block";
-      if (modo === 'regresivo') {
-        document.getElementById("formulario").style.display = "block";
-      } else {
-        document.getElementById("progresivo").style.display = "block";
-      }
-    }
+<script>
+const webhook="https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
+let intervalo=null, modo="";
+/* Regresivo vars */
+let tiempoRest=0, tiempoInit=0, regPaused=false, regProyecto='', regNotas='';
+/* Progresivo vars */
+let progSeg=0, progPaused=false;
+/* Datos pendientes para modal */
+let pendProy='', pendNotas='', pendDur=0;
 
-    function iniciarCronometro() {
-      let horas = parseInt(document.getElementById("horas").value) || 0;
-      let minutos = parseInt(document.getElementById("minutos").value) || 0;
-      let segundos = parseInt(document.getElementById("segundos").value) || 0;
-      let proyecto = document.getElementById("proyectoInput").value || "sin nombre";
-      let notas = document.getElementById("notasInput").value || "";
+/* Utils */
+const pad=n=>n.toString().padStart(2,'0');
+const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return `${pad(h)}:${pad(m)}:${pad(sec)}`};
+function mostrarTiempo(seg){contador.textContent=fmt(seg);} 
+function mostrarInfo(h,m,s,p,n){info.innerHTML=`⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>📁 <strong>${p}</strong>${n?`<br>📝 <em>${n}</em>`:''}`;}
+function enviarWebhook(p,n,d,r){fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({usuario:'dichoso',proyecto:p,notas:n||'',resumen:r||'',duracion_segundos:d,terminado_en:new Date().toISOString()})});}
+function showResult(p,n,d,r){result.innerHTML=`<h3>Resumen enviado</h3><p><strong>Proyecto:</strong> ${p}</p><p><strong>Tiempo:</strong> ${fmt(d)}</p>${n?`<p><strong>Notas:</strong> ${n}</p>`:''}${r?`<p><strong>Resumen:</strong> ${r}</p>`:''}`;}
 
-      tiempoInicial = horas * 3600 + minutos * 60 + segundos;
-      tiempoRestante = tiempoInicial;
-      mostrarInfo(horas, minutos, segundos, proyecto, notas);
+/* Navegación */
+function seleccionarModo(m){modo=m;modoSeleccion.style.display='none';volverBtn.style.display='block';(m==='regresivo'?formulario:progresivo).style.display='block';}
+function volverAlInicio(){clearInterval(intervalo);resetUI();}
+function resetUI(){modoSeleccion.style.display='block';formulario.style.display=progresivo.style.display='none';regControls.style.display='none';volverBtn.style.display='none';info.innerHTML='';contador.textContent='';result.innerHTML='';hideProgBtns();}
+function hideProgBtns(){btnPauseProg.style.display=btnResetProg.style.display=btnStopProg.style.display='none';btnStartProg.style.display='inline-block';progPaused=false;}
 
-      intervalo = setInterval(() => {
-        mostrarTiempo(tiempoRestante);
-        if (tiempoRestante <= 0) {
-          clearInterval(intervalo);
-          document.getElementById("contador").textContent = "¡Tiempo terminado!";
-          enviarWebhook(proyecto, notas, tiempoInicial);
-        }
-        tiempoRestante--;
-      }, 1000);
-    }
+/* ---------------- Regresivo --------------- */
+function iniciarRegresivo(){const h=+horas.value||0,m=+minutos.value||0,s=+segundos.value||0;if(!h&&!m&&!s){alert('Introduce un tiempo');return;}regProyecto=proyectoInput.value||'sin nombre';regNotas=notasInput.value||'';tiempoInit=h*3600+m*60+s;tiempoRest=tiempoInit;regPaused=false;mostrarInfo(h,m,s,regProyecto,regNotas);regControls.style.display='block';btnPauseReg.textContent='⏸ Pausar';clearInterval(intervalo);intervalo=setInterval(updateReg,1000);} 
+function updateReg(){mostrarTiempo(tiempoRest);if(--tiempoRest<0){clearInterval(intervalo);regControls.style.display='none';contador.textContent='¡Tiempo terminado!';openModal(regProyecto,regNotas,tiempoInit);} }
+function togglePauseReg(){if(!regPaused){clearInterval(intervalo);regPaused=true;btnPauseReg.textContent='▶️ Reanudar';}else{regPaused=false;btnPauseReg.textContent='⏸ Pausar';intervalo=setInterval(updateReg,1000);} }
+function resetReg(){clearInterval(intervalo);tiempoRest=tiempoInit;mostrarTiempo(tiempoRest);if(!regPaused){intervalo=setInterval(updateReg,1000);} }
+function prepareSendReg(){clearInterval(intervalo);regControls.style.display='none';openModal(regProyecto,regNotas,tiempoInit-tiempoRest);} 
 
-    function iniciarProgresivo() {
-      contadorSegundos = 0;
-      pausado = false;
-      document.getElementById("botonIniciarProg").style.display = "none";
-      document.getElementById("botonPausaProg").style.display = "inline-block";
-      document.getElementById("botonReiniciarProg").style.display = "inline-block";
-      document.getElementById("botonDetener").style.display = "inline-block";
-      intervalo = setInterval(() => {
-        contadorSegundos++;
-        mostrarTiempo(contadorSegundos);
-      }, 1000);
-    }
+/* ---------------- Progresivo -------------- */
+function startProgresivo(){progSeg=0;progPaused=false;switchProgBtns(true);clearInterval(intervalo);intervalo=setInterval(()=>{progSeg++;mostrarTiempo(progSeg);},1000);} 
+function togglePauseProg(){if(!progPaused){clearInterval(intervalo);progPaused=true;btnPauseProg.textContent='▶️ Reanudar';}else{progPaused=false;btnPauseProg.textContent='⏸ Pausar';intervalo=setInterval(()=>{progSeg++;mostrarTiempo(progSeg);},1000);} }
+function resetProg(){clearInterval(intervalo);progSeg=0;mostrarTiempo(0);if(!progPaused){intervalo=setInterval(()=>{progSeg++;mostrarTiempo(progSeg);},1000);} }
+function prepareSendProg(){clearInterval(intervalo);switchProgBtns(false);openModal(proyectoProg.value||'sin nombre',notasProg.value||'',progSeg);} 
+function switchProgBtns(r){btnStartProg.style.display=r?'none':'inline-block';btnPauseProg.style.display=btnResetProg.style.display=btnStopProg.style.display=r?'inline-block':'none';}
 
-    function pausarProgresivo() {
-      if (!pausado) {
-        clearInterval(intervalo);
-        pausado = true;
-        document.getElementById("botonPausaProg").textContent = "▶️ Reanudar";
-      } else {
-        iniciarProgresivo();
-        pausado = false;
-        document.getElementById("botonPausaProg").textContent = "⏸ Pausar";
-      }
-    }
-
-    function reiniciarProgresivo() {
-      clearInterval(intervalo);
-      contadorSegundos = 0;
-      mostrarTiempo(0);
-      iniciarProgresivo();
-    }
-
-    function detenerProgresivo() {
-      clearInterval(intervalo);
-      let proyecto = document.getElementById("proyectoProg").value || "sin nombre";
-      let notas = document.getElementById("notasProg").value || "";
-      enviarWebhook(proyecto, notas, contadorSegundos);
-      document.getElementById("contador").textContent = "Enviado ✅";
-    }
-
-    function mostrarTiempo(segundos) {
-      const hrs = Math.floor(segundos / 3600);
-      const mins = Math.floor((segundos % 3600) / 60);
-      const secs = segundos % 60;
-      document.getElementById("contador").textContent = `${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    }
-
-    function mostrarInfo(h, m, s, proyecto, notas) {
-      document.getElementById("info").innerHTML = `
-        ⏱ <strong style="font-size: 1.5em">${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</strong><br>
-        📁 <strong style="font-size: 1.4em">${proyecto}</strong><br>
-        📝 <em>${notas}</em>`;
-    }
-
-    function enviarWebhook(proyecto, notas, duracionSegundos) {
-      fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usuario: 'dichoso',
-          proyecto: proyecto,
-          notas: notas,
-          duracion_segundos: duracionSegundos,
-          terminado_en: new Date().toISOString()
-        })
-      });
-    }
-
-    function volverAlInicio() {
-      clearInterval(intervalo);
-      document.getElementById("modoSeleccion").style.display = "block";
-      document.getElementById("formulario").style.display = "none";
-      document.getElementById("progresivo").style.display = "none";
-      document.getElementById("info").innerHTML = "";
-      document.getElementById("contador").textContent = "";
-      document.getElementById("volverBtn").style.display = "none";
-    }
-  </script>
+/* ------------- Modal confirm ------------- */
+function openModal(p,n,d){pendProy=p;pendNotas=n;pendDur=d;confirmSend.style.display='flex';resumenInput.style.display='none';btnYes.style.display='inline-block';btnNo.style.display='inline-block';btnSendSummary.style.display='none';resumenInput.value='';}
+function wantSummary(){resumenInput.style.display='block';btnYes.style.display='none';btnNo.style.display='none';btnSendSummary.style.display='inline-block';}
+function sendNow(withResumen){const resumen=withResumen?resumenInput.value.trim():'';enviarWebhook(pendProy,pendNotas,pendDur,resumen);confirmSend.style.display='none';contador.textContent='Enviado ✅';showResult(pendProy,pendNotas,pendDur,resumen);}
+</script>
 </body>
 </html>
