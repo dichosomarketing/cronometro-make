@@ -6,16 +6,40 @@
   <style>
     body { font-family: sans-serif; text-align: center; padding: 40px; }
     #formulario, #contador, #info { margin-top: 20px; }
-    input { padding: 10px; font-size: 1em; margin: 5px; width: 200px; }
-    button { padding: 10px 20px; font-size: 1em; cursor: pointer; }
-    #contador { font-size: 2.5em; margin-top: 30px; }
+    input[type="number"] {
+      padding: 10px;
+      font-size: 1em;
+      width: 80px;
+      margin: 5px;
+      text-align: center;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1em;
+      width: 250px;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #contador {
+      font-size: 2.5em;
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
   <h1>🕒 Cronómetro por Proyecto</h1>
 
   <div id="formulario">
-    <input id="tiempoInput" type="number" placeholder="Tiempo en minutos"><br>
+    <div>
+      <input id="horas" type="number" min="0" value="0"> :
+      <input id="minutos" type="number" min="0" max="59" value="0"> :
+      <input id="segundos" type="number" min="0" max="59" value="0">
+    </div>
     <input id="proyectoInput" type="text" placeholder="Nombre del proyecto"><br>
     <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
   </div>
@@ -24,30 +48,35 @@
   <div id="contador"></div>
 
   <script>
-    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // Reemplaza con tu webhook real
+    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // Sustituye con tu webhook real
 
     function iniciarCronometro() {
-      const tiempoMin = parseInt(document.getElementById("tiempoInput").value);
+      const h = parseInt(document.getElementById("horas").value) || 0;
+      const m = parseInt(document.getElementById("minutos").value) || 0;
+      const s = parseInt(document.getElementById("segundos").value) || 0;
       const proyecto = document.getElementById("proyectoInput").value || "sin nombre";
-      const usuario = "dichoso"; // Puedes personalizarlo
+      const usuario = "dichoso"; // Personalizable
 
-      if (!tiempoMin || tiempoMin <= 0) {
-        alert("Introduce un tiempo válido");
+      const duracion = h * 3600 + m * 60 + s;
+      if (duracion <= 0) {
+        alert("Introduce un tiempo válido.");
         return;
       }
 
       document.getElementById("formulario").style.display = "none";
 
-      const duracion = tiempoMin * 60;
-      let tiempoRestante = duracion;
-
       document.getElementById("info").innerHTML = `
-        ⏱ Tiempo: <strong>${tiempoMin} minutos</strong><br>
+        ⏱ Tiempo: <strong>${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</strong><br>
         📁 Proyecto: <strong>${proyecto}</strong>
       `;
 
+      let tiempoRestante = duracion;
       const intervalo = setInterval(() => {
-        document.getElementById("contador").textContent = `${tiempoRestante} segundos restantes`;
+        const hrs = Math.floor(tiempoRestante / 3600);
+        const mins = Math.floor((tiempoRestante % 3600) / 60);
+        const secs = tiempoRestante % 60;
+        document.getElementById("contador").textContent =
+          `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
         if (tiempoRestante <= 0) {
           clearInterval(intervalo);
@@ -57,8 +86,8 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               usuario: usuario,
-              duracion: duracion,
               proyecto: proyecto,
+              duracion_original: `${h}:${m}:${s}`,
               terminado_en: new Date().toISOString()
             })
           });
