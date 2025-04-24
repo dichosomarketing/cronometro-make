@@ -24,19 +24,18 @@
   <div id="contador"></div>
 
   <script>
-    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // ← Sustituye con tu webhook real
+    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // Reemplaza con tu webhook real
 
     function iniciarCronometro() {
       const tiempoMin = parseInt(document.getElementById("tiempoInput").value);
       const proyecto = document.getElementById("proyectoInput").value || "sin nombre";
-      const usuario = "dichoso"; // Puedes personalizarlo o hacerlo variable
+      const usuario = "dichoso"; // Puedes personalizarlo
 
       if (!tiempoMin || tiempoMin <= 0) {
         alert("Introduce un tiempo válido");
         return;
       }
 
-      // Ocultar formulario
       document.getElementById("formulario").style.display = "none";
 
       const duracion = tiempoMin * 60;
