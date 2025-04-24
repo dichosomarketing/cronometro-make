@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cronómetro</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px; }
+    #contador { font-size: 3em; margin: 40px; }
+  </style>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const duracion = parseInt(params.get("tiempo") || "60"); // en segundos
+    const usuario = params.get("usuario") || "desconocido";
+    const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
+
+    let tiempoRestante = duracion;
+
+    function iniciarCuentaAtras() {
+      const intervalo = setInterval(() => {
+        document.getElementById("contador").textContent = `${tiempoRestante} segundos`;
+        if (tiempoRestante <= 0) {
+          clearInterval(intervalo);
+          document.getElementById("contador").textContent = "¡Tiempo terminado!";
+          fetch(webhook, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              usuario: usuario,
+              duracion: duracion,
+              terminado_en: new Date().toISOString()
+            })
+          });
+        }
+        tiempoRestante--;
+      }, 1000);
+    }
+
+    window.onload = iniciarCuentaAtras;
+  </script>
+</head>
+<body>
+  <h1>Cronómetro activo</h1>
+  <div id="contador">Cargando...</div>
+</body>
+</html>
