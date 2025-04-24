@@ -1,54 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Cronómetro de Proyecto</title>
+  <title>Cronómetro Deportivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; }
-    #formulario, #contador, #info { margin-top: 20px; }
-    input[type="number"] {
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f1f1f1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #00ffc3;
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+
+    .container {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 195, 0.2);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    input[type="number"], input[type="text"] {
+      background: #111;
+      border: 1px solid #00ffc3;
+      color: #fff;
       padding: 10px;
-      font-size: 1em;
+      font-size: 1.2em;
+      margin: 8px 5px;
+      border-radius: 10px;
       width: 80px;
-      margin: 5px;
       text-align: center;
     }
+
     input[type="text"] {
-      padding: 10px;
-      font-size: 1em;
-      width: 250px;
-      margin: 10px 0;
+      width: 90%;
     }
+
     button {
-      padding: 10px 20px;
-      font-size: 1em;
+      background-color: #00ffc3;
+      border: none;
+      color: #0f0f0f;
+      padding: 12px 24px;
+      font-size: 1.1em;
+      border-radius: 10px;
       cursor: pointer;
       margin-top: 10px;
+      transition: background 0.3s;
     }
+
+    button:hover {
+      background-color: #00e6b3;
+    }
+
     #contador {
-      font-size: 2.5em;
+      font-size: 2.8em;
       margin-top: 30px;
+      font-weight: bold;
+      color: #00ffc3;
+    }
+
+    #info {
+      margin-top: 20px;
+      font-size: 1.1em;
     }
   </style>
 </head>
 <body>
-  <h1>🕒 Cronómetro por Proyecto</h1>
+  <div class="container">
+    <h1>⏱ Cronómetro de Proyecto</h1>
 
-  <div id="formulario">
-    <div>
-      <input id="horas" type="number" min="0" value="0"> :
-      <input id="minutos" type="number" min="0" max="59" value="0"> :
-      <input id="segundos" type="number" min="0" max="59" value="0">
+    <div id="formulario">
+      <div>
+        <input id="horas" type="number" min="0" value="0"> :
+        <input id="minutos" type="number" min="0" max="59" value="0"> :
+        <input id="segundos" type="number" min="0" max="59" value="0">
+      </div>
+      <input id="proyectoInput" type="text" placeholder="Nombre del proyecto"><br>
+      <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
     </div>
-    <input id="proyectoInput" type="text" placeholder="Nombre del proyecto"><br>
-    <button onclick="iniciarCronometro()">Iniciar cronómetro</button>
+
+    <div id="info"></div>
+    <div id="contador"></div>
   </div>
 
-  <div id="info"></div>
-  <div id="contador"></div>
-
   <script>
-    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // Sustituye con tu webhook real
+    const webhook = "https://hook.make.com/TU_WEBHOOK_AQUI"; // Sustituye por tu URL de Make
 
     function iniciarCronometro() {
       const h = parseInt(document.getElementById("horas").value) || 0;
@@ -66,7 +116,7 @@
       document.getElementById("formulario").style.display = "none";
 
       document.getElementById("info").innerHTML = `
-        ⏱ Tiempo: <strong>${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</strong><br>
+        ⏱ <strong>${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</strong><br>
         📁 Proyecto: <strong>${proyecto}</strong>
       `;
 
