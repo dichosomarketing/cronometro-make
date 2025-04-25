@@ -2,188 +2,506 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Cronómetro Deportivo</title>
+  <title>Cronómetro de Proyecto</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    :root{
+      --bg-main:#0f0f0f;
+      --bg-container:#1a1a1a;
+      --c-primary:#00558c;
+      --c-primary-dark:#00436e;
+      --font:'Orbitron',sans-serif;
+    }
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Orbitron',sans-serif;background:#0f0f0f;color:#00558c;display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative}
-    h1{font-size:2.4rem;margin-bottom:20px;color:#00558c;text-shadow:0 0 10px #00558c}
-    .container{background:#1a1a1a;width:90%;max-width:520px;padding:30px;border-radius:20px;text-align:center;box-shadow:0 0 20px rgba(0,85,140,.35)}
-    input,textarea,button,select{border-radius:10px;font-size:1.05rem;padding:10px;margin:6px;color:#fff}
-    input,textarea,select{background:#111;border:1px solid #00558c;width:90%;text-align:center}
+    body{
+      font-family:var(--font);
+      background:var(--bg-main);
+      color:var(--c-primary);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    .container{
+      background:var(--bg-container);
+      width:92%;
+      max-width:520px;
+      padding:32px 24px 40px;
+      border-radius:22px;
+      text-align:center;
+      box-shadow:0 0 22px rgba(0,85,140,.35);
+      transition:padding .3s;
+    }
+    .container.counting{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      padding:24px;
+    }
+    h1{
+      font-size:2.4rem;
+      margin-bottom:24px;
+      color:var(--c-primary);
+      text-shadow:0 0 10px var(--c-primary);
+    }
+    /* ---------- Pantalla inicial ---------- */
+    #modoSeleccion{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    #modoSeleccion button{
+      background:var(--c-primary);
+      color:#fff;
+      font-size:1.35rem;
+      font-weight:600;
+      border:none;
+      border-radius:12px;
+      width:100%;
+      height:80px;
+      cursor:pointer;
+      transition:transform .15s;
+    }
+    #modoSeleccion button:hover{
+      background:var(--c-primary-dark);
+      transform:scale(1.02);
+    }
+    /* ---------- Inputs y botones secundarios ---------- */
+    input,textarea,button,select{
+      border-radius:10px;
+      font-size:0.95rem;   /* un poco más pequeño */
+      padding:8px 8px;     /* menos alto y más compacto */
+      margin:6px;
+      color:#fff;
+    }
+    input,textarea,select{
+      background:#111;
+      border:1px solid var(--c-primary);
+      width:90%;
+      text-align:center;
+    }
     input[type="number"]{width:80px}
     textarea{resize:none}
-    button{background:#00558c;border:none;cursor:pointer}
-    button:hover{background:#00436e}
+    button{
+      background:var(--c-primary);
+      border:none;
+      cursor:pointer;
+    }
+    button:hover{background:var(--c-primary-dark)}
     select{cursor:pointer}
-    #contador{font-size:3em;margin-top:25px;font-weight:bold;color:#00558c;text-shadow:0 0 10px #00558c}
-    #info{margin-top:18px;font-size:1.1em;line-height:1.5}
-    #result{margin-top:18px;font-size:1.05em;border-top:1px solid #00558c;padding-top:14px}
-    #volverBtn{position:absolute;top:18px;right:18px;background:#003d66;font-size:.9em;display:none}
+    /* ---------- Reloj ---------- */
+    #contador{
+      font-size:6rem;
+      font-weight:700;
+      letter-spacing:2px;
+      margin:40px 0 20px;
+      color:var(--c-primary);
+      text-shadow:0 0 12px var(--c-primary);
+    }
+    #contador:empty{margin:0;height:0;font-size:0}
+    #info{margin-top:18px;font-size:1.15em;line-height:1.5}
+    #result{margin-top:18px;font-size:1.05em;border-top:1px solid var(--c-primary);padding-top:14px}
+    #volverBtn{
+      position:absolute;
+      top:18px;right:18px;
+      background:#003d66;
+      font-size:.9em;
+      display:none;
+      padding:6px 14px;
+      border-radius:8px;
+    }
     #volverBtn:hover{background:#002f4d}
-    /* modal */
-    #confirmSend{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;z-index:10}
-    .modal{background:#1a1a1a;padding:20px;border-radius:15px;width:90%;max-width:380px;box-shadow:0 0 15px rgba(0,85,140,.5)}
-    .modal textarea{width:100%;margin-top:8px;background:#111;border:1px solid #00558c}
+    /* ---------- Modal ---------- */
+    #confirmSend{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:#0009;
+      align-items:center;
+      justify-content:center;
+      z-index:10;
+    }
+    .modal{
+      background:var(--bg-container);
+      padding:20px;
+      border-radius:15px;
+      width:90%;
+      max-width:380px;
+      box-shadow:0 0 15px rgba(0,85,140,.5);
+    }
+    .modal textarea{
+      width:100%;
+      margin-top:8px;
+      background:#111;
+      border:1px solid var(--c-primary);
+    }
   </style>
 </head>
 <body>
   <button id="volverBtn" onclick="volverAlInicio()">↩ Volver</button>
-  <div class="container">
+  <div class="container" id="appWrapper">
     <h1>⏱ Cronómetro de Proyecto</h1>
-
+    <!-- ---------- Pantalla inicial ---------- -->
     <div id="modoSeleccion">
       <button onclick="seleccionarModo('regresivo')">Especificar tiempo</button>
       <button onclick="seleccionarModo('progresivo')">Empezar a contar</button>
+      <button onclick="seleccionarModo('manual')">Introducir tiempo manual</button>
     </div>
 
-    <!-- Regresivo form -->
+    <!-- ---------- FORMULARIO REGRESIVO ---------- -->
     <div id="formulario" style="display:none;">
-      <div>
-        <input id="horas" type="number" min="0" value="0"> :
-        <input id="minutos" type="number" min="0" max="59" value="0"> :
+      <div style="margin-bottom:12px;">
+        <input id="horas"    type="number" min="0" value="0"> :
+        <input id="minutos"  type="number" min="0" max="59" value="0"> :
         <input id="segundos" type="number" min="0" max="59" value="0">
       </div>
-      <input id="proyectoInput" type="text" placeholder="Nombre del proyecto">
-      <select id="proyectoSelect"></select><br>
+      <input    id="proyectoInput" type="text" placeholder="Nombre del proyecto">
+      <select   id="proyectoSelect"></select><br>
       <textarea id="notasInput" rows="3" placeholder="Notas (opcional)"></textarea><br>
-      <button onclick="iniciarRegresivo()">Iniciar cronómetro</button>
+      <button   onclick="iniciarRegresivo()">Iniciar cronómetro</button>
     </div>
 
-    <!-- Regresivo controls -->
-    <div id="regControls" style="display:none;">
+    <div id="regControls" style="display:none;gap:8px;">
       <button id="btnPauseReg" onclick="togglePauseReg()">⏸ Pausar</button>
       <button id="btnResetReg" onclick="resetReg()">🔁 Reiniciar</button>
-      <button id="btnSendReg" onclick="prepareSendReg()">⏹ Enviar</button>
+      <button id="btnSendReg"  onclick="prepareSendReg()">⏹ Enviar</button>
     </div>
 
-    <!-- Progresivo controls -->
+    <!-- ---------- FORMULARIO PROGRESIVO ---------- -->
     <div id="progresivo" style="display:none;">
-      <input id="proyectoProg" type="text" placeholder="Nombre del proyecto">
+      <input  id="proyectoProg" type="text" placeholder="Nombre del proyecto">
       <select id="proyectoSelectProg"></select><br>
       <textarea id="notasProg" rows="3" placeholder="Notas (opcional)"></textarea><br>
+
       <button id="btnStartProg" onclick="startProgresivo()">▶️ Empezar</button>
       <button id="btnPauseProg" onclick="togglePauseProg()" style="display:none;">⏸ Pausar</button>
-      <button id="btnResetProg" onclick="resetProg()" style="display:none;">🔁 Reiniciar</button>
-      <button id="btnStopProg" onclick="prepareSendProg()" style="display:none;">⏹ Enviar</button>
+      <button id="btnResetProg" onclick="resetProg()"       style="display:none;">🔁 Reiniciar</button>
+      <button id="btnStopProg"  onclick="prepareSendProg()" style="display:none;">⏹ Enviar</button>
     </div>
 
+    <!-- ---------- FORMULARIO MANUAL ---------- -->
+    <div id="manualForm" style="display:none;">
+      <div style="margin-bottom:12px;">
+        <input id="manHoras"    type="number" min="0" value="0"> :
+        <input id="manMinutos"  type="number" min="0" max="59" value="0"> :
+        <input id="manSegundos" type="number" min="0" max="59" value="0">
+      </div>
+      <input    id="proyectoManual" type="text" placeholder="Nombre del proyecto">
+      <select   id="proyectoSelectManual"></select><br>
+      <textarea id="notasManual" rows="3" placeholder="Notas (opcional)"></textarea><br>
+      <button   onclick="enviarManual()">⏹ Enviar tiempo</button>
+    </div>
+
+    <!-- ---------- Zonas de información ---------- -->
     <div id="info"></div>
     <div id="contador"></div>
     <div id="result"></div>
-  </div>
+  </div><!-- /container -->
 
-  <!-- Modal confirmación -->
+  <!-- ---------- MODAL RESUMEN ---------- -->
   <div id="confirmSend">
     <div class="modal">
       <div id="confirmText">¿Quieres añadir un resumen de lo que has hecho?</div>
       <textarea id="resumenInput" rows="3" placeholder="Escribe tu resumen..." style="display:none;"></textarea>
-      <div style="margin-top:15px;">
-        <button id="btnNo" onclick="sendNow(false)">No</button>
-        <button id="btnYes" onclick="wantSummary()">Sí</button>
-        <button id="btnSendSummary" style="display:none;" onclick="sendNow(true)">Enviar</button>
+      <div style="margin-top:15px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button id="btnNo"          onclick="sendNow(false)">No</button>
+        <button id="btnYes"         onclick="wantSummary()">Sí</button>
+        <button id="btnSendSummary" onclick="sendNow(true)" style="display:none;">Enviar</button>
       </div>
     </div>
   </div>
 
+  <!--  Aquí empieza el <script> en la siguiente parte -->
 <script>
-/* --------- Código original intacto --------- */
-const webhook="https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
-let intervalo=null, modo="";
-let tiempoRest=0, tiempoInit=0, regPaused=false, regProyecto='', regNotas='';
-let progSeg=0, progPaused=false;
-let pendProy='', pendNotas='', pendDur=0;
-const pad=n=>n.toString().padStart(2,'0');
-const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return `${pad(h)}:${pad(m)}:${pad(sec)}`};
-function mostrarTiempo(seg){contador.textContent=fmt(seg);} 
-function mostrarInfo(h,m,s,p,n){info.innerHTML=`⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>📁 <strong>${p}</strong>${n?`<br>📝 <em>${n}</em>`:''}`;}
-function enviarWebhook(p, n, d, r) {
-  const durHHMMSS = fmt(d);                    // duración formateada hh:mm:ss
-  const fechaFinal = formatearFecha(new Date()); // fecha en formato YYYY-MM-DD hh:mm
+/* ========= CONFIGURACIÓN ========= */
+const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
+const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsiFYl6h93jHlDyTmj8IPY84zu5WQiVNbhB4RUQ6oOBi3pECs8zKufnAFcPMHIIH0neK6x0NVjsFjL/pub?gid=0&single=true&output=csv";
+const REFRESH_MS = 10_000; // 10 s
 
-  fetch(webhook, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      usuario: 'dichoso',
-      proyecto: p,
-      notas: n || '',
-      resumen: r || '',
-      duracion_segundos: d,
-      duracion_horas: durHHMMSS,
-      terminado_en: fechaFinal                  // ahora en formato correcto
+/* ========= ESTADO ========= */
+let intervalo = null,  modo = "";
+let tiempoRest = 0,     tiempoInit = 0, regPaused = false, regProyecto = "", regNotas = "";
+let progSeg    = 0,     progPaused = false;
+let pendProy   = "",    pendNotas  = "", pendDur  = 0;
+
+/* ========= HELPERS ========= */
+const pad = n => n.toString().padStart(2,"0");
+const fmt = s => {
+  const h = Math.floor(s/3600),
+        m = Math.floor((s%3600)/60),
+        sec = s%60;
+  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+};
+
+function mostrarTiempo(seg){ contador.textContent = fmt(seg); }
+
+function mostrarInfo(h,m,s,p,n){
+  info.innerHTML =
+    `⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>`+
+    `📁 <strong>${p}</strong>`+
+    (n ? `<br>📝 <em>${n}</em>` : "");
+}
+
+function formatearFecha(f){
+  return `${f.getFullYear()}-${pad(f.getMonth()+1)}-${pad(f.getDate())} `+
+         `${pad(f.getHours())}:${pad(f.getMinutes())}`;
+}
+
+function enviarWebhook(p,n,d,r){
+  fetch(webhook,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      usuario:"dichoso",
+      proyecto:p,
+      notas:n || "",
+      resumen:r || "",
+      duracion_segundos:d,
+      duracion_horas:fmt(d),
+      terminado_en:formatearFecha(new Date())
     })
   });
 }
-function formatearFecha(fecha) {
-  const y = fecha.getFullYear();
-  const m = String(fecha.getMonth() + 1).padStart(2, '0');
-  const d = String(fecha.getDate()).padStart(2, '0');
-  const h = String(fecha.getHours()).padStart(2, '0');
-  const min = String(fecha.getMinutes()).padStart(2, '0');
-  return `${y}-${m}-${d} ${h}:${min}`;
+
+function showResult(p,n,d,r){
+  result.innerHTML =
+    `<h3>Resumen enviado</h3>
+     <p><strong>Proyecto:</strong> ${p}</p>
+     <p><strong>Tiempo:</strong> ${fmt(d)}</p>`+
+    (n ? `<p><strong>Notas:</strong> ${n}</p>` : "")+
+    (r ? `<p><strong>Resumen:</strong> ${r}</p>` : "");
 }
-function showResult(p,n,d,r){result.innerHTML=`<h3>Resumen enviado</h3><p><strong>Proyecto:</strong> ${p}</p><p><strong>Tiempo:</strong> ${fmt(d)}</p>${n?`<p><strong>Notas:</strong> ${n}</p>`:''}${r?`<p><strong>Resumen:</strong> ${r}</p>`:''}`;}
-function seleccionarModo(m){modo=m;modoSeleccion.style.display='none';volverBtn.style.display='block';(m==='regresivo'?formulario:progresivo).style.display='block';}
-function volverAlInicio(){clearInterval(intervalo);resetUI();}
-function resetUI(){modoSeleccion.style.display='block';formulario.style.display=progresivo.style.display='none';regControls.style.display='none';volverBtn.style.display='none';info.innerHTML='';contador.textContent='';result.innerHTML='';hideProgBtns();}
-function hideProgBtns(){btnPauseProg.style.display=btnResetProg.style.display=btnStopProg.style.display='none';btnStartProg.style.display='inline-block';progPaused=false;}
-/* Regresivo */
-function iniciarRegresivo(){const h=+horas.value||0,m=+minutos.value||0,s=+segundos.value||0;if(!h&&!m&&!s){alert('Introduce un tiempo');return;}regProyecto=proyectoInput.value||'sin nombre';regNotas=notasInput.value||'';tiempoInit=h*3600+m*60+s;tiempoRest=tiempoInit;regPaused=false;mostrarInfo(h,m,s,regProyecto,regNotas);regControls.style.display='block';btnPauseReg.textContent='⏸ Pausar';clearInterval(intervalo);intervalo=setInterval(updateReg,1000);} 
-function updateReg(){mostrarTiempo(tiempoRest);if(--tiempoRest<0){clearInterval(intervalo);regControls.style.display='none';contador.textContent='¡Tiempo terminado!';openModal(regProyecto,regNotas,tiempoInit);} }
-function togglePauseReg(){if(!regPaused){clearInterval(intervalo);regPaused=true;btnPauseReg.textContent='▶️ Reanudar';}else{regPaused=false;btnPauseReg.textContent='⏸ Pausar';intervalo=setInterval(updateReg,1000);} }
-function resetReg(){clearInterval(intervalo);tiempoRest=tiempoInit;mostrarTiempo(tiempoRest);if(!regPaused){intervalo=setInterval(updateReg,1000);} }
-function prepareSendReg(){clearInterval(intervalo);regControls.style.display='none';openModal(regProyecto,regNotas,tiempoInit-tiempoRest);} 
-/* Progresivo */
-function startProgresivo(){progSeg=0;progPaused=false;switchProgBtns(true);clearInterval(intervalo);intervalo=setInterval(()=>{progSeg++;mostrarTiempo(progSeg);},1000);} 
-function togglePauseProg(){if(!progPaused){clearInterval(intervalo);progPaused=true;btnPauseProg.textContent='▶️ Reanudar';}else{progPaused=false;btnPauseProg.textContent='⏸ Pausar';intervalo=setInterval(()=>{progSeg++;mostrarTiempo(progSeg);},1000);} }
-function resetProg(){clearInterval(intervalo);progSeg=0;mostrarTiempo(0);if(!progPaused){intervalo=setInterval(()=>{progSeg++;mostrarTiempo(progSeg);},1000);} }
-function prepareSendProg(){clearInterval(intervalo);switchProgBtns(false);openModal(proyectoProg.value||'sin nombre',notasProg.value||'',progSeg);} 
-function switchProgBtns(r){btnStartProg.style.display=r?'none':'inline-block';btnPauseProg.style.display=btnResetProg.style.display=btnStopProg.style.display=r?'inline-block':'none';}
-/* Modal */
-function openModal(p,n,d){pendProy=p;pendNotas=n;pendDur=d;confirmSend.style.display='flex';resumenInput.style.display='none';btnYes.style.display='inline-block';btnNo.style.display='inline-block';btnSendSummary.style.display='none';resumenInput.value='';}
-function wantSummary(){resumenInput.style.display='block';btnYes.style.display='none';btnNo.style.display='none';btnSendSummary.style.display='inline-block';}
-function sendNow(withResumen){const resumen=withResumen?resumenInput.value.trim():'';enviarWebhook(pendProy,pendNotas,pendDur,resumen);confirmSend.style.display='none';contador.textContent='Enviado ✅';showResult(pendProy,pendNotas,pendDur,resumen);}
+/* ========= NAVEGACIÓN ENTRE MODOS ========= */
+function seleccionarModo(m){
+  modo = m;
+  modoSeleccion.style.display = "none";
+  volverBtn.style.display     = "block";
+  document.querySelector(".container").classList.remove("counting");
 
-/* ----------- NUEVO: refresco automático de proyectos ----------- */
-const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsiFYl6h93jHlDyTmj8IPY84zu5WQiVNbhB4RUQ6oOBi3pECs8zKufnAFcPMHIIH0neK6x0NVjsFjL/pub?output=csv';
-const REFRESH_MS = 10_000; // 10 s  (ajusta si quieres)
+  formulario.style.display   =
+  progresivo.style.display   =
+  manualForm.style.display   = "none";
 
+  if (m === "regresivo")       formulario.style.display = "block";
+  else if (m === "progresivo") progresivo.style.display = "block";
+  else                         manualForm.style.display = "block";
+}
+
+function volverAlInicio(){
+  clearInterval(intervalo);
+  resetUI();
+}
+
+function resetUI(){
+  modoSeleccion.style.display = "flex";
+  formulario.style.display    =
+  progresivo.style.display    =
+  manualForm.style.display    = "none";
+  regControls.style.display   = "none";
+  volverBtn.style.display     = "none";
+  info.innerHTML              = "";
+  contador.textContent        = "";
+  result.innerHTML            = "";
+  hideProgBtns();
+  document.querySelector(".container").classList.remove("counting");
+}
+
+function hideProgBtns(){
+  btnPauseProg.style.display =
+  btnResetProg.style.display =
+  btnStopProg.style.display  = "none";
+  btnStartProg.style.display = "inline-block";
+  progPaused = false;
+}
+
+/* ========= CRONÓMETRO REGRESIVO ========= */
+function iniciarRegresivo(){
+  const h = +horas.value    || 0,
+        m = +minutos.value  || 0,
+        s = +segundos.value || 0;
+
+  if(!h && !m && !s){
+    alert("Introduce un tiempo");
+    return;
+  }
+
+  regProyecto = proyectoInput.value || "sin nombre";
+  regNotas    = notasInput.value    || "";
+
+  tiempoInit  = h*3600 + m*60 + s;
+  tiempoRest  = tiempoInit;
+  regPaused   = false;
+
+  mostrarInfo(h,m,s,regProyecto,regNotas);
+  regControls.style.display = "flex";
+  btnPauseReg.textContent   = "⏸ Pausar";
+
+  clearInterval(intervalo);
+  intervalo = setInterval(updateReg, 1000);
+  document.querySelector(".container").classList.add("counting");
+}
+
+function updateReg(){
+  mostrarTiempo(tiempoRest);
+  if(--tiempoRest < 0){
+    clearInterval(intervalo);
+    regControls.style.display = "none";
+    contador.textContent      = "¡Tiempo terminado!";
+    openModal(regProyecto, regNotas, tiempoInit);
+  }
+}
+
+function togglePauseReg(){
+  if(!regPaused){
+    clearInterval(intervalo);
+    regPaused = true;
+    btnPauseReg.textContent = "▶️ Reanudar";
+  }else{
+    regPaused = false;
+    btnPauseReg.textContent = "⏸ Pausar";
+    intervalo = setInterval(updateReg, 1000);
+  }
+}
+
+function resetReg(){
+  clearInterval(intervalo);
+  tiempoRest = tiempoInit;
+  mostrarTiempo(tiempoRest);
+  if(!regPaused){
+    intervalo = setInterval(updateReg, 1000);
+  }
+}
+
+function prepareSendReg(){
+  clearInterval(intervalo);
+  regControls.style.display = "none";
+  openModal(regProyecto, regNotas, tiempoInit - tiempoRest);
+}
+
+/* ========= CRONÓMETRO PROGRESIVO ========= */
+function startProgresivo(){
+  progSeg    = 0;
+  progPaused = false;
+  switchProgBtns(true);
+
+  clearInterval(intervalo);
+  intervalo = setInterval(()=>{ progSeg++; mostrarTiempo(progSeg); }, 1000);
+  document.querySelector(".container").classList.add("counting");
+}
+
+function togglePauseProg(){
+  if(!progPaused){
+    clearInterval(intervalo);
+    progPaused = true;
+    btnPauseProg.textContent = "▶️ Reanudar";
+  }else{
+    progPaused = false;
+    btnPauseProg.textContent = "⏸ Pausar";
+    intervalo = setInterval(()=>{ progSeg++; mostrarTiempo(progSeg); }, 1000);
+  }
+}
+
+function resetProg(){
+  clearInterval(intervalo);
+  progSeg = 0;
+  mostrarTiempo(0);
+  if(!progPaused){
+    intervalo = setInterval(()=>{ progSeg++; mostrarTiempo(progSeg); }, 1000);
+  }
+}
+
+function prepareSendProg(){
+  clearInterval(intervalo);
+  switchProgBtns(false);
+  openModal(proyectoProg.value || "sin nombre", notasProg.value || "", progSeg);
+}
+
+function switchProgBtns(running){
+  btnStartProg.style.display = running ? "none" : "inline-block";
+  btnPauseProg.style.display =
+  btnResetProg.style.display =
+  btnStopProg.style.display  = running ? "inline-block" : "none";
+}
+/* ========= ENTRADA MANUAL ========= */
+function enviarManual(){
+  const h = +manHoras.value    || 0,
+        m = +manMinutos.value  || 0,
+        s = +manSegundos.value || 0;
+  if(!h && !m && !s){
+    alert("Introduce un tiempo");
+    return;
+  }
+  openModal(
+    proyectoManual.value || "sin nombre",
+    notasManual.value    || "",
+    h*3600 + m*60 + s
+  );
+}
+
+/* ========= MODAL & ENVÍO ========= */
+function openModal(p,n,d){
+  pendProy = p;
+  pendNotas = n;
+  pendDur   = d;
+
+  confirmSend.style.display = "flex";
+  resumenInput.style.display     = "none";
+  btnYes.style.display           = "inline-block";
+  btnNo.style.display            = "inline-block";
+  btnSendSummary.style.display   = "none";
+  resumenInput.value             = "";
+}
+
+function wantSummary(){
+  resumenInput.style.display   = "block";
+  btnYes.style.display         = "none";
+  btnNo.style.display          = "none";
+  btnSendSummary.style.display = "inline-block";
+}
+
+function sendNow(withResumen){
+  const resumen = withResumen ? resumenInput.value.trim() : "";
+  enviarWebhook(pendProy, pendNotas, pendDur, resumen);
+  confirmSend.style.display = "none";
+  contador.textContent      = "Enviado ✅";
+  showResult(pendProy, pendNotas, pendDur, resumen);
+}
+
+/* ========= CARGA DINÁMICA DE PROYECTOS ========= */
 function rellenarSelect(sel){
-  fetch(SHEET_CSV + '&t=' + Date.now())   // Date.now() evita caché
-    .then(r=>r.text())
-    .then(txt=>{
-      const nuevos = txt.split('\n').slice(1)
-                        .map(l=>l.split(',')[0]?.trim())
+  fetch(SHEET_CSV + "&t=" + Date.now()) // evitar caché
+    .then(r => r.text())
+    .then(txt =>{
+      const nuevos = txt.split("\n")
+                        .slice(1)
+                        .map(l => l.split(",")[0]?.trim())
                         .filter(Boolean);
-      const actuales = Array.from(sel.options).slice(1).map(o=>o.value);
-
-      if (JSON.stringify(nuevos) !== JSON.stringify(actuales)) {
-        sel.length = 0;                            // limpiar todo
-        nuevos.forEach(p=>sel.add(new Option(p,p)));
-        console.log('↻ Proyectos actualizados');
+      const actuales = Array.from(sel.options).map(o => o.value);
+      if(JSON.stringify(nuevos) !== JSON.stringify(actuales)){
+        sel.length = 0;               // limpiar
+        nuevos.forEach(p => sel.add(new Option(p,p)));
       }
     })
-    .catch(e=>console.error('Error cargando proyectos:',e));
+    .catch(e => console.error("Error cargando proyectos:", e));
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  // primera carga
+/* ========= INICIO ========= */
+document.addEventListener("DOMContentLoaded", () =>{
   rellenarSelect(proyectoSelect);
   rellenarSelect(proyectoSelectProg);
+  rellenarSelect(proyectoSelectManual);
 
-  proyectoSelect.addEventListener('change',e=>{
-    if(e.target.value) proyectoInput.value = e.target.value;
-  });
-  proyectoSelectProg.addEventListener('change',e=>{
-    if(e.target.value) proyectoProg.value = e.target.value;
-  });
+  proyectoSelect      .addEventListener("change", e => { if(e.target.value) proyectoInput.value   = e.target.value; });
+  proyectoSelectProg  .addEventListener("change", e => { if(e.target.value) proyectoProg.value   = e.target.value; });
+  proyectoSelectManual.addEventListener("change", e => { if(e.target.value) proyectoManual.value = e.target.value; });
 
-  // refresco periódico
-  setInterval(()=>{
+  setInterval(() =>{
     rellenarSelect(proyectoSelect);
     rellenarSelect(proyectoSelectProg);
+    rellenarSelect(proyectoSelectManual);
   }, REFRESH_MS);
 });
 </script>
