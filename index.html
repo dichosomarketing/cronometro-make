@@ -112,7 +112,15 @@ function enviarWebhook(p, n, d, r) {
       resumen: r || '',
       duracion_segundos: d,      // sigue enviando los segundos
       duracion_horas: durHHMMSS, // ahora en formato hh:mm:ss
-      terminado_en: new Date().toISOString()
+      terminado_en: formatearFecha(new Date())
+function formatearFecha(fecha) {
+  const y = fecha.getFullYear();
+  const m = (fecha.getMonth() + 1).toString().padStart(2, '0');
+  const d = fecha.getDate().toString().padStart(2, '0');
+  const h = fecha.getHours().toString().padStart(2, '0');
+  const min = fecha.getMinutes().toString().padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
     })
   });
 }
