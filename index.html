@@ -99,8 +99,8 @@ const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;retu
 function mostrarTiempo(seg){contador.textContent=fmt(seg);} 
 function mostrarInfo(h,m,s,p,n){info.innerHTML=`⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>📁 <strong>${p}</strong>${n?`<br>📝 <em>${n}</em>`:''}`;}
 function enviarWebhook(p, n, d, r) {
-  // d = duración en segundos → la pasamos a "hh:mm:ss"
-  const durHHMMSS = fmt(d);   // usa la función que ya existe
+  const durHHMMSS = fmt(d);                    // duración formateada hh:mm:ss
+  const fechaFinal = formatearFecha(new Date()); // fecha en formato YYYY-MM-DD hh:mm
 
   fetch(webhook, {
     method: 'POST',
@@ -110,21 +110,20 @@ function enviarWebhook(p, n, d, r) {
       proyecto: p,
       notas: n || '',
       resumen: r || '',
-      duracion_segundos: d,      // sigue enviando los segundos
-      duracion_horas: durHHMMSS, // ahora en formato hh:mm:ss
-      terminado_en: formatearFecha(new Date())
-function formatearFecha(fecha) {
-  const y = fecha.getFullYear();
-  const m = (fecha.getMonth() + 1).toString().padStart(2, '0');
-  const d = fecha.getDate().toString().padStart(2, '0');
-  const h = fecha.getHours().toString().padStart(2, '0');
-  const min = fecha.getMinutes().toString().padStart(2, '0');
-  return `${y}-${m}-${d} ${h}:${min}`;
-}
+      duracion_segundos: d,
+      duracion_horas: durHHMMSS,
+      terminado_en: fechaFinal                  // ahora en formato correcto
     })
   });
 }
-
+function formatearFecha(fecha) {
+  const y = fecha.getFullYear();
+  const m = String(fecha.getMonth() + 1).padStart(2, '0');
+  const d = String(fecha.getDate()).padStart(2, '0');
+  const h = String(fecha.getHours()).padStart(2, '0');
+  const min = String(fecha.getMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
 function showResult(p,n,d,r){result.innerHTML=`<h3>Resumen enviado</h3><p><strong>Proyecto:</strong> ${p}</p><p><strong>Tiempo:</strong> ${fmt(d)}</p>${n?`<p><strong>Notas:</strong> ${n}</p>`:''}${r?`<p><strong>Resumen:</strong> ${r}</p>`:''}`;}
 function seleccionarModo(m){modo=m;modoSeleccion.style.display='none';volverBtn.style.display='block';(m==='regresivo'?formulario:progresivo).style.display='block';}
 function volverAlInicio(){clearInterval(intervalo);resetUI();}
