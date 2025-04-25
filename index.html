@@ -98,7 +98,25 @@ const pad=n=>n.toString().padStart(2,'0');
 const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return `${pad(h)}:${pad(m)}:${pad(sec)}`};
 function mostrarTiempo(seg){contador.textContent=fmt(seg);} 
 function mostrarInfo(h,m,s,p,n){info.innerHTML=`⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>📁 <strong>${p}</strong>${n?`<br>📝 <em>${n}</em>`:''}`;}
-function enviarWebhook(p,n,d,r){fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({usuario:'dichoso',proyecto:p,notas:n||'',resumen:r||'',duracion_segundos:d,terminado_en:new Date().toISOString()})});}
+function enviarWebhook(p, n, d, r) {
+  // d = duración en segundos → la pasamos a horas con 2 decimales
+  const horas = +(d / 3600).toFixed(2);
+
+  fetch(webhook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      usuario: 'dichoso',
+      proyecto: p,
+      notas: n || '',
+      resumen: r || '',
+      duracion_segundos: d,
+      duracion_horas: horas,          // ← nuevo dato en horas
+      terminado_en: new Date().toISOString()
+    })
+  });
+}
+
 function showResult(p,n,d,r){result.innerHTML=`<h3>Resumen enviado</h3><p><strong>Proyecto:</strong> ${p}</p><p><strong>Tiempo:</strong> ${fmt(d)}</p>${n?`<p><strong>Notas:</strong> ${n}</p>`:''}${r?`<p><strong>Resumen:</strong> ${r}</p>`:''}`;}
 function seleccionarModo(m){modo=m;modoSeleccion.style.display='none';volverBtn.style.display='block';(m==='regresivo'?formulario:progresivo).style.display='block';}
 function volverAlInicio(){clearInterval(intervalo);resetUI();}
