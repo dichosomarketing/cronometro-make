@@ -99,8 +99,8 @@ const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;retu
 function mostrarTiempo(seg){contador.textContent=fmt(seg);} 
 function mostrarInfo(h,m,s,p,n){info.innerHTML=`⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>📁 <strong>${p}</strong>${n?`<br>📝 <em>${n}</em>`:''}`;}
 function enviarWebhook(p, n, d, r) {
-  // d = duración en segundos → la pasamos a horas con 2 decimales
-  const horas = +(d / 3600).toFixed(2);
+  // d = duración en segundos → la pasamos a "hh:mm:ss"
+  const durHHMMSS = fmt(d);   // usa la función que ya existe
 
   fetch(webhook, {
     method: 'POST',
@@ -110,8 +110,8 @@ function enviarWebhook(p, n, d, r) {
       proyecto: p,
       notas: n || '',
       resumen: r || '',
-      duracion_segundos: d,
-      duracion_horas: horas,          // ← nuevo dato en horas
+      duracion_segundos: d,      // sigue enviando los segundos
+      duracion_horas: durHHMMSS, // ahora en formato hh:mm:ss
       terminado_en: new Date().toISOString()
     })
   });
