@@ -369,7 +369,12 @@
       clearInterval(intervalo);
       regControls.style.display = "none";
       contador.textContent      = "¡Tiempo terminado!";
-      openModal(regProyecto, regNotas, tiempoInit);
+      openModal(
+  regProyecto,
+  regNotas,
+  tiempoInit,
+  objetivoSelect.value || ""
+);
     }
   }
 
