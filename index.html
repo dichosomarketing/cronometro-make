@@ -12,8 +12,11 @@
       --c-primary-dark:#00436e;
       --font:'Orbitron',sans-serif;
     }
+
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
     *{box-sizing:border-box;margin:0;padding:0}
+
     body{
       font-family:var(--font);
       background:var(--bg-main);
@@ -24,6 +27,7 @@
       justify-content:center;
       position:relative;
     }
+
     .container{
       background:var(--bg-container);
       width:92%;
@@ -34,6 +38,7 @@
       box-shadow:0 0 22px rgba(0,85,140,.35);
       transition:padding .3s;
     }
+
     .container.counting{
       display:flex;
       flex-direction:column;
@@ -41,18 +46,21 @@
       align-items:center;
       padding:24px;
     }
+
     h1{
       font-size:2.4rem;
       margin-bottom:24px;
       color:var(--c-primary);
       text-shadow:0 0 10px var(--c-primary);
     }
+
     /* ---------- Pantalla inicial ---------- */
     #modoSeleccion{
       display:flex;
       flex-direction:column;
       gap:18px;
     }
+
     #modoSeleccion button{
       background:var(--c-primary);
       color:#fff;
@@ -65,18 +73,21 @@
       cursor:pointer;
       transition:transform .15s;
     }
+
     #modoSeleccion button:hover{
       background:var(--c-primary-dark);
       transform:scale(1.02);
     }
+
     /* ---------- Inputs y botones secundarios ---------- */
     input,textarea,button,select{
       border-radius:10px;
-      font-size:0.95rem;   /* un poco más pequeño */
-      padding:8px 8px;     /* menos alto y más compacto */
+      font-size:0.95rem;
+      padding:8px 8px;
       margin:6px;
       color:#fff;
     }
+
     input,textarea,select{
       background:#111;
       border:1px solid var(--c-primary);
@@ -85,6 +96,7 @@
     }
     input[type="number"]{width:80px}
     textarea{resize:none}
+
     button{
       background:var(--c-primary);
       border:none;
@@ -92,6 +104,7 @@
     }
     button:hover{background:var(--c-primary-dark)}
     select{cursor:pointer}
+
     /* ---------- Reloj ---------- */
     #contador{
       font-size:6rem;
@@ -114,6 +127,7 @@
       border-radius:8px;
     }
     #volverBtn:hover{background:#002f4d}
+
     /* ---------- Modal ---------- */
     #confirmSend{
       display:none;
@@ -160,7 +174,8 @@
       </div>
       <input    id="proyectoInput" type="text" placeholder="Nombre del proyecto">
       <select   id="proyectoSelect"></select><br>
-      <textarea id="notasInput" rows="3" placeholder="Notas (opcional)"></textarea><br>
+      <select   id="objetivoSelect"></select><br>
+      <textarea id="notasInput" rows="3" placeholder="notas_before"></textarea><br>
       <button   onclick="iniciarRegresivo()">Iniciar cronómetro</button>
     </div>
 
@@ -174,7 +189,8 @@
     <div id="progresivo" style="display:none;">
       <input  id="proyectoProg" type="text" placeholder="Nombre del proyecto">
       <select id="proyectoSelectProg"></select><br>
-      <textarea id="notasProg" rows="3" placeholder="Notas (opcional)"></textarea><br>
+      <select id="objetivoSelectProg"></select><br>
+      <textarea id="notasProg" rows="3" placeholder="notas_before"></textarea><br>
 
       <button id="btnStartProg" onclick="startProgresivo()">▶️ Empezar</button>
       <button id="btnPauseProg" onclick="togglePauseProg()" style="display:none;">⏸ Pausar</button>
@@ -191,7 +207,8 @@
       </div>
       <input    id="proyectoManual" type="text" placeholder="Nombre del proyecto">
       <select   id="proyectoSelectManual"></select><br>
-      <textarea id="notasManual" rows="3" placeholder="Notas (opcional)"></textarea><br>
+      <select   id="objetivoSelectManual"></select><br>
+      <textarea id="notasManual" rows="3" placeholder="notas_before"></textarea><br>
       <button   onclick="enviarManual()">⏹ Enviar tiempo</button>
     </div>
 
@@ -201,11 +218,11 @@
     <div id="result"></div>
   </div><!-- /container -->
 
-  <!-- ---------- MODAL RESUMEN ---------- -->
+  <!-- ---------- MODAL NOTAS ADICIONALES ---------- -->
   <div id="confirmSend">
     <div class="modal">
-      <div id="confirmText">¿Quieres añadir un resumen de lo que has hecho?</div>
-      <textarea id="resumenInput" rows="3" placeholder="Escribe tu resumen..." style="display:none;"></textarea>
+      <div id="confirmText">¿quieres escribir alguna otra nota?</div>
+      <textarea id="resumenInput" rows="3" placeholder="Escribe tu nota..." style="display:none;"></textarea>
       <div style="margin-top:15px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
         <button id="btnNo"          onclick="sendNow(false)">No</button>
         <button id="btnYes"         onclick="wantSummary()">Sí</button>
@@ -213,297 +230,315 @@
       </div>
     </div>
   </div>
+  <script>
+  /* ========= CONFIGURACIÓN ========= */
+  const webhook       = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
+  const SHEET_CSV     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsiFYl6h93jHlDyTmj8IPY84zu5WQiVNbhB4RUQ6oOBi3pECs8zKufnAFcPMHIIH0neK6x0NVjsFjL/pub?gid=0&single=true&output=csv";          // PROYECTOS
+  const OBJETIVOS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsiFYl6h93jHlDyTmj8IPY84zu5WQiVNbhB4RUQ6oOBi3pECs8zKufnAFcPMHIIH0neK6x0NVjsFjL/pub?gid=64095486&single=true&output=csv";    // OBJETIVOS GENERALES
+  const REFRESH_MS    = 10_000; // 10 s
 
-  <!--  Aquí empieza el <script> en la siguiente parte -->
-<script>
-/* ========= CONFIGURACIÓN ========= */
-const webhook = "https://hook.eu2.make.com/li534pdy1qjtrqt6fchq6yrll4s16nzj";
-const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsiFYl6h93jHlDyTmj8IPY84zu5WQiVNbhB4RUQ6oOBi3pECs8zKufnAFcPMHIIH0neK6x0NVjsFjL/pub?gid=0&single=true&output=csv";
-const REFRESH_MS = 10_000; // 10 s
+  /* ========= ESTADO ========= */
+  let intervalo  = null,  modo      = "";
+  let tiempoRest = 0,     tiempoInit = 0, regPaused = false, regProyecto = "", regNotas = "";
+  let progSeg    = 0,     progPaused = false;
+  let pendProy   = "",    pendNotas  = "", pendDur  = 0;
 
-/* ========= ESTADO ========= */
-let intervalo = null,  modo = "";
-let tiempoRest = 0,     tiempoInit = 0, regPaused = false, regProyecto = "", regNotas = "";
-let progSeg    = 0,     progPaused = false;
-let pendProy   = "",    pendNotas  = "", pendDur  = 0;
+  /* ========= HELPERS ========= */
+  const pad = n => n.toString().padStart(2,"0");
 
-/* ========= HELPERS ========= */
-const pad = n => n.toString().padStart(2,"0");
-const fmt = s => {
-  const h = Math.floor(s/3600),
-        m = Math.floor((s%3600)/60),
-        sec = s%60;
-  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
-};
+  const fmt = s => {
+    const h   = Math.floor(s/3600),
+          m   = Math.floor((s%3600)/60),
+          sec = s%60;
+    return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+  };
 
-function mostrarTiempo(seg){ contador.textContent = fmt(seg); }
+  function mostrarTiempo(seg){ contador.textContent = fmt(seg); }
 
-function mostrarInfo(h,m,s,p,n){
-  info.innerHTML =
-    `⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>`+
-    `📁 <strong>${p}</strong>`+
-    (n ? `<br>📝 <em>${n}</em>` : "");
-}
-
-function formatearFecha(f){
-  return `${f.getFullYear()}-${pad(f.getMonth()+1)}-${pad(f.getDate())} `+
-         `${pad(f.getHours())}:${pad(f.getMinutes())}`;
-}
-
-function enviarWebhook(p,n,d,r){
-  fetch(webhook,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      usuario:"dichoso",
-      proyecto:p,
-      notas:n || "",
-      resumen:r || "",
-      duracion_segundos:d,
-      duracion_horas:fmt(d),
-      terminado_en:formatearFecha(new Date())
-    })
-  });
-}
-
-function showResult(p,n,d,r){
-  result.innerHTML =
-    `<h3>Resumen enviado</h3>
-     <p><strong>Proyecto:</strong> ${p}</p>
-     <p><strong>Tiempo:</strong> ${fmt(d)}</p>`+
-    (n ? `<p><strong>Notas:</strong> ${n}</p>` : "")+
-    (r ? `<p><strong>Resumen:</strong> ${r}</p>` : "");
-}
-/* ========= NAVEGACIÓN ENTRE MODOS ========= */
-function seleccionarModo(m){
-  modo = m;
-  modoSeleccion.style.display = "none";
-  volverBtn.style.display     = "block";
-  document.querySelector(".container").classList.remove("counting");
-
-  formulario.style.display   =
-  progresivo.style.display   =
-  manualForm.style.display   = "none";
-
-  if (m === "regresivo")       formulario.style.display = "block";
-  else if (m === "progresivo") progresivo.style.display = "block";
-  else                         manualForm.style.display = "block";
-}
-
-function volverAlInicio(){
-  clearInterval(intervalo);
-  resetUI();
-}
-
-function resetUI(){
-  modoSeleccion.style.display = "flex";
-  formulario.style.display    =
-  progresivo.style.display    =
-  manualForm.style.display    = "none";
-  regControls.style.display   = "none";
-  volverBtn.style.display     = "none";
-  info.innerHTML              = "";
-  contador.textContent        = "";
-  result.innerHTML            = "";
-  hideProgBtns();
-  document.querySelector(".container").classList.remove("counting");
-}
-
-function hideProgBtns(){
-  btnPauseProg.style.display =
-  btnResetProg.style.display =
-  btnStopProg.style.display  = "none";
-  btnStartProg.style.display = "inline-block";
-  progPaused = false;
-}
-
-/* ========= CRONÓMETRO REGRESIVO ========= */
-function iniciarRegresivo(){
-  const h = +horas.value    || 0,
-        m = +minutos.value  || 0,
-        s = +segundos.value || 0;
-
-  if(!h && !m && !s){
-    alert("Introduce un tiempo");
-    return;
+  function mostrarInfo(h,m,s,p,n){
+    info.innerHTML =
+      `⏱ <strong>${fmt(h*3600+m*60+s)}</strong><br>`+
+      `📁 <strong>${p}</strong>`+
+      (n ? `<br>📝 <em>${n}</em>` : "");
   }
 
-  regProyecto = proyectoInput.value || "sin nombre";
-  regNotas    = notasInput.value    || "";
+  function formatearFecha(f){
+    return `${f.getFullYear()}-${pad(f.getMonth()+1)}-${pad(f.getDate())} `+
+           `${pad(f.getHours())}:${pad(f.getMinutes())}`;
+  }
 
-  tiempoInit  = h*3600 + m*60 + s;
-  tiempoRest  = tiempoInit;
-  regPaused   = false;
+  function enviarWebhook(p,n,d,r){
+    fetch(webhook,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        usuario:"dichoso",
+        proyecto:p,
+        notas_before: n || "",
+        notas_after:  r || "",
+        duracion_segundos:d,
+        duracion_horas:fmt(d),
+        terminado_en:formatearFecha(new Date())
+      })
+    });
+  }
 
-  mostrarInfo(h,m,s,regProyecto,regNotas);
-  regControls.style.display = "flex";
-  btnPauseReg.textContent   = "⏸ Pausar";
+  function showResult(p,n,d,r){
+    result.innerHTML =
+      `<h3>Resumen enviado</h3>
+       <p><strong>Proyecto:</strong> ${p}</p>
+       <p><strong>Tiempo:</strong> ${fmt(d)}</p>`+
+      (n ? `<p><strong>notas_before:</strong> ${n}</p>` : "")+
+      (r ? `<p><strong>notas_after:</strong> ${r}</p>` : "");
+  }
+  /* ========= NAVEGACIÓN ENTRE MODOS ========= */
+  function seleccionarModo(m){
+    modo = m;
+    modoSeleccion.style.display = "none";
+    volverBtn.style.display     = "block";
+    document.querySelector(".container").classList.remove("counting");
 
-  clearInterval(intervalo);
-  intervalo = setInterval(updateReg, 1000);
-  document.querySelector(".container").classList.add("counting");
-}
+    formulario.style.display =
+    progresivo.style.display =
+    manualForm.style.display = "none";
 
-function updateReg(){
-  mostrarTiempo(tiempoRest);
-  if(--tiempoRest < 0){
+    if (m === "regresivo")       formulario.style.display = "block";
+    else if (m === "progresivo") progresivo.style.display = "block";
+    else                         manualForm.style.display = "block";
+  }
+
+  function volverAlInicio(){
+    clearInterval(intervalo);
+    resetUI();
+  }
+
+  function resetUI(){
+    modoSeleccion.style.display = "flex";
+    formulario.style.display    =
+    progresivo.style.display    =
+    manualForm.style.display    = "none";
+    regControls.style.display   = "none";
+    volverBtn.style.display     = "none";
+    info.innerHTML              = "";
+    contador.textContent        = "";
+    result.innerHTML            = "";
+    hideProgBtns();
+    document.querySelector(".container").classList.remove("counting");
+  }
+
+  function hideProgBtns(){
+    btnPauseProg.style.display =
+    btnResetProg.style.display =
+    btnStopProg.style.display  = "none";
+    btnStartProg.style.display = "inline-block";
+    progPaused = false;
+  }
+
+  /* ========= CRONÓMETRO REGRESIVO ========= */
+  function iniciarRegresivo(){
+    const h = +horas.value    || 0,
+          m = +minutos.value  || 0,
+          s = +segundos.value || 0;
+
+    if(!h && !m && !s){
+      alert("Introduce un tiempo");
+      return;
+    }
+
+    regProyecto = proyectoInput.value || "sin nombre";
+    regNotas    = notasInput.value    || "";
+
+    tiempoInit  = h*3600 + m*60 + s;
+    tiempoRest  = tiempoInit;
+    regPaused   = false;
+
+    mostrarInfo(h,m,s,regProyecto,regNotas);
+    regControls.style.display = "flex";
+    btnPauseReg.textContent   = "⏸ Pausar";
+
+    clearInterval(intervalo);
+    intervalo = setInterval(updateReg, 1000);
+    document.querySelector(".container").classList.add("counting");
+  }
+
+  function updateReg(){
+    mostrarTiempo(tiempoRest);
+    if(--tiempoRest < 0){
+      clearInterval(intervalo);
+      regControls.style.display = "none";
+      contador.textContent      = "¡Tiempo terminado!";
+      openModal(regProyecto, regNotas, tiempoInit);
+    }
+  }
+
+  function togglePauseReg(){
+    if(!regPaused){
+      clearInterval(intervalo);
+      regPaused = true;
+      btnPauseReg.textContent = "▶️ Reanudar";
+    }else{
+      regPaused = false;
+      btnPauseReg.textContent = "⏸ Pausar";
+      intervalo = setInterval(updateReg, 1000);
+    }
+  }
+
+  function resetReg(){
+    clearInterval(intervalo);
+    tiempoRest = tiempoInit;
+    mostrarTiempo(tiempoRest);
+    if(!regPaused){
+      intervalo = setInterval(updateReg, 1000);
+    }
+  }
+
+  function prepareSendReg(){
     clearInterval(intervalo);
     regControls.style.display = "none";
-    contador.textContent      = "¡Tiempo terminado!";
-    openModal(regProyecto, regNotas, tiempoInit);
+    openModal(regProyecto, regNotas, tiempoInit - tiempoRest);
   }
-}
-
-function togglePauseReg(){
-  if(!regPaused){
-    clearInterval(intervalo);
-    regPaused = true;
-    btnPauseReg.textContent = "▶️ Reanudar";
-  }else{
-    regPaused = false;
-    btnPauseReg.textContent = "⏸ Pausar";
-    intervalo = setInterval(updateReg, 1000);
-  }
-}
-
-function resetReg(){
-  clearInterval(intervalo);
-  tiempoRest = tiempoInit;
-  mostrarTiempo(tiempoRest);
-  if(!regPaused){
-    intervalo = setInterval(updateReg, 1000);
-  }
-}
-
-function prepareSendReg(){
-  clearInterval(intervalo);
-  regControls.style.display = "none";
-  openModal(regProyecto, regNotas, tiempoInit - tiempoRest);
-}
-
-/* ========= CRONÓMETRO PROGRESIVO ========= */
-function startProgresivo(){
-  progSeg    = 0;
-  progPaused = false;
-  switchProgBtns(true);
-
-  clearInterval(intervalo);
-  intervalo = setInterval(()=>{ progSeg++; mostrarTiempo(progSeg); }, 1000);
-  document.querySelector(".container").classList.add("counting");
-}
-
-function togglePauseProg(){
-  if(!progPaused){
-    clearInterval(intervalo);
-    progPaused = true;
-    btnPauseProg.textContent = "▶️ Reanudar";
-  }else{
+  /* ========= CRONÓMETRO PROGRESIVO ========= */
+  function startProgresivo(){
+    progSeg    = 0;
     progPaused = false;
-    btnPauseProg.textContent = "⏸ Pausar";
-    intervalo = setInterval(()=>{ progSeg++; mostrarTiempo(progSeg); }, 1000);
+    switchProgBtns(true);
+
+    clearInterval(intervalo);
+    intervalo = setInterval(() => { progSeg++; mostrarTiempo(progSeg); }, 1000);
+    document.querySelector(".container").classList.add("counting");
   }
-}
 
-function resetProg(){
-  clearInterval(intervalo);
-  progSeg = 0;
-  mostrarTiempo(0);
-  if(!progPaused){
-    intervalo = setInterval(()=>{ progSeg++; mostrarTiempo(progSeg); }, 1000);
+  function togglePauseProg(){
+    if(!progPaused){
+      clearInterval(intervalo);
+      progPaused = true;
+      btnPauseProg.textContent = "▶️ Reanudar";
+    }else{
+      progPaused = false;
+      btnPauseProg.textContent = "⏸ Pausar";
+      intervalo = setInterval(() => { progSeg++; mostrarTiempo(progSeg); }, 1000);
+    }
   }
-}
 
-function prepareSendProg(){
-  clearInterval(intervalo);
-  switchProgBtns(false);
-  openModal(proyectoProg.value || "sin nombre", notasProg.value || "", progSeg);
-}
-
-function switchProgBtns(running){
-  btnStartProg.style.display = running ? "none" : "inline-block";
-  btnPauseProg.style.display =
-  btnResetProg.style.display =
-  btnStopProg.style.display  = running ? "inline-block" : "none";
-}
-/* ========= ENTRADA MANUAL ========= */
-function enviarManual(){
-  const h = +manHoras.value    || 0,
-        m = +manMinutos.value  || 0,
-        s = +manSegundos.value || 0;
-  if(!h && !m && !s){
-    alert("Introduce un tiempo");
-    return;
+  function resetProg(){
+    clearInterval(intervalo);
+    progSeg = 0;
+    mostrarTiempo(0);
+    if(!progPaused){
+      intervalo = setInterval(() => { progSeg++; mostrarTiempo(progSeg); }, 1000);
+    }
   }
-  openModal(
-    proyectoManual.value || "sin nombre",
-    notasManual.value    || "",
-    h*3600 + m*60 + s
-  );
-}
 
-/* ========= MODAL & ENVÍO ========= */
-function openModal(p,n,d){
-  pendProy = p;
-  pendNotas = n;
-  pendDur   = d;
+  function prepareSendProg(){
+    clearInterval(intervalo);
+    switchProgBtns(false);
+    openModal(proyectoProg.value || "sin nombre",
+              notasProg.value    || "",
+              progSeg);
+  }
 
-  confirmSend.style.display = "flex";
-  resumenInput.style.display     = "none";
-  btnYes.style.display           = "inline-block";
-  btnNo.style.display            = "inline-block";
-  btnSendSummary.style.display   = "none";
-  resumenInput.value             = "";
-}
+  function switchProgBtns(running){
+    btnStartProg.style.display = running ? "none" : "inline-block";
+    btnPauseProg.style.display =
+    btnResetProg.style.display =
+    btnStopProg.style.display  = running ? "inline-block" : "none";
+  }
 
-function wantSummary(){
-  resumenInput.style.display   = "block";
-  btnYes.style.display         = "none";
-  btnNo.style.display          = "none";
-  btnSendSummary.style.display = "inline-block";
-}
+  /* ========= ENTRADA MANUAL ========= */
+  function enviarManual(){
+    const h = +manHoras.value    || 0,
+          m = +manMinutos.value  || 0,
+          s = +manSegundos.value || 0;
 
-function sendNow(withResumen){
-  const resumen = withResumen ? resumenInput.value.trim() : "";
-  enviarWebhook(pendProy, pendNotas, pendDur, resumen);
-  confirmSend.style.display = "none";
-  contador.textContent      = "Enviado ✅";
-  showResult(pendProy, pendNotas, pendDur, resumen);
-}
+    if(!h && !m && !s){
+      alert("Introduce un tiempo");
+      return;
+    }
 
-/* ========= CARGA DINÁMICA DE PROYECTOS ========= */
-function rellenarSelect(sel){
-  fetch(SHEET_CSV + "&t=" + Date.now()) // evitar caché
-    .then(r => r.text())
-    .then(txt =>{
-      const nuevos = txt.split("\n")
-                        .slice(1)
-                        .map(l => l.split(",")[0]?.trim())
-                        .filter(Boolean);
-      const actuales = Array.from(sel.options).map(o => o.value);
-      if(JSON.stringify(nuevos) !== JSON.stringify(actuales)){
-        sel.length = 0;               // limpiar
-        nuevos.forEach(p => sel.add(new Option(p,p)));
-      }
-    })
-    .catch(e => console.error("Error cargando proyectos:", e));
-}
+    openModal(
+      proyectoManual.value || "sin nombre",
+      notasManual.value    || "",
+      h*3600 + m*60 + s
+    );
+  }
+  /* ========= MODAL & ENVÍO ========= */
+  function openModal(p,n,d){
+    pendProy  = p;
+    pendNotas = n;
+    pendDur   = d;
 
-/* ========= INICIO ========= */
-document.addEventListener("DOMContentLoaded", () =>{
-  rellenarSelect(proyectoSelect);
-  rellenarSelect(proyectoSelectProg);
-  rellenarSelect(proyectoSelectManual);
+    confirmSend.style.display   = "flex";
+    resumenInput.style.display  = "none";
+    btnYes.style.display        = "inline-block";
+    btnNo.style.display         = "inline-block";
+    btnSendSummary.style.display= "none";
+    resumenInput.value          = "";
+  }
 
-  proyectoSelect      .addEventListener("change", e => { if(e.target.value) proyectoInput.value   = e.target.value; });
-  proyectoSelectProg  .addEventListener("change", e => { if(e.target.value) proyectoProg.value   = e.target.value; });
-  proyectoSelectManual.addEventListener("change", e => { if(e.target.value) proyectoManual.value = e.target.value; });
+  function wantSummary(){
+    resumenInput.style.display  = "block";
+    btnYes.style.display        = "none";
+    btnNo.style.display         = "none";
+    btnSendSummary.style.display= "inline-block";
+  }
 
-  setInterval(() =>{
-    rellenarSelect(proyectoSelect);
-    rellenarSelect(proyectoSelectProg);
-    rellenarSelect(proyectoSelectManual);
-  }, REFRESH_MS);
-});
-</script>
+  function sendNow(withResumen){
+    const resumen = withResumen ? resumenInput.value.trim() : "";
+    enviarWebhook(pendProy, pendNotas, pendDur, resumen);
+    confirmSend.style.display = "none";
+    contador.textContent      = "Enviado ✅";
+    showResult(pendProy, pendNotas, pendDur, resumen);
+  }
+
+  /* ========= CARGA DINÁMICA DE SELECTS ========= */
+  function rellenarSelect(sel, csvUrl){
+    fetch(csvUrl + "&t=" + Date.now())      // evitar caché
+      .then(r => r.text())
+      .then(txt =>{
+        const nuevos = txt.split("\n")
+                          .slice(1)
+                          .map(l => l.split(",")[0]?.trim())
+                          .filter(Boolean);
+        const actuales = Array.from(sel.options).map(o => o.value);
+        if(JSON.stringify(nuevos) !== JSON.stringify(actuales)){
+          sel.length = 0;                   // limpiar
+          nuevos.forEach(p => sel.add(new Option(p,p)));
+        }
+      })
+      .catch(e => console.error("Error cargando datos:", e));
+  }
+
+  /* ========= INICIO ========= */
+  document.addEventListener("DOMContentLoaded", () =>{
+    /* PROYECTOS */
+    rellenarSelect(proyectoSelect,       SHEET_CSV);
+    rellenarSelect(proyectoSelectProg,   SHEET_CSV);
+    rellenarSelect(proyectoSelectManual, SHEET_CSV);
+
+    /* OBJETIVOS GENERALES */
+    rellenarSelect(objetivoSelect,       OBJETIVOS_CSV);
+    rellenarSelect(objetivoSelectProg,   OBJETIVOS_CSV);
+    rellenarSelect(objetivoSelectManual, OBJETIVOS_CSV);
+
+    /* Copiar selección al input */
+    proyectoSelect      .addEventListener("change", e => { if(e.target.value) proyectoInput.value   = e.target.value; });
+    proyectoSelectProg  .addEventListener("change", e => { if(e.target.value) proyectoProg.value    = e.target.value; });
+    proyectoSelectManual.addEventListener("change", e => { if(e.target.value) proyectoManual.value = e.target.value; });
+
+    /* Refrescar listas cada REFRESH_MS */
+    setInterval(() =>{
+      /* PROYECTOS */
+      rellenarSelect(proyectoSelect,       SHEET_CSV);
+      rellenarSelect(proyectoSelectProg,   SHEET_CSV);
+      rellenarSelect(proyectoSelectManual, SHEET_CSV);
+
+      /* OBJETIVOS GENERALES */
+      rellenarSelect(objetivoSelect,       OBJETIVOS_CSV);
+      rellenarSelect(objetivoSelectProg,   OBJETIVOS_CSV);
+      rellenarSelect(objetivoSelectManual, OBJETIVOS_CSV);
+    }, REFRESH_MS);
+  }); /* fin DOMContentLoaded */
+
+  </script>
 </body>
 </html>
