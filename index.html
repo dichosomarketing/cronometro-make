@@ -452,22 +452,22 @@
   }
 
   /* ========= ENTRADA MANUAL ========= */
-  function enviarManual(){
-    const h = +manHoras.value    || 0,
-          m = +manMinutos.value  || 0,
-          s = +manSegundos.value || 0;
-
-    if(!h && !m && !s){
-      alert("Introduce un tiempo");
-      return;
-    }
-
-    openModal(
-      proyectoManual.value || "sin nombre",
-      notasManual.value    || "",
-      h*3600 + m*60 + s
-    );
+ function enviarManual(){
+  const h = +manHoras.value    || 0,
+        m = +manMinutos.value  || 0,
+        s = +manSegundos.value || 0;
+  if(!h && !m && !s){
+    alert("Introduce un tiempo");
+    return;
   }
+  openModal(
+    proyectoManual.value    || "sin nombre",
+    notasManual.value       || "",
+    h*3600 + m*60 + s,
+    objetivoSelectManual.value || ""
+  );
+}
+
   /* ========= MODAL & ENVÍO ========= */
   function openModal(p,n,d,o){
     pendProy  = p;
