@@ -241,7 +241,7 @@
   let intervalo  = null,  modo      = "";
   let tiempoRest = 0,     tiempoInit = 0, regPaused = false, regProyecto = "", regNotas = "";
   let progSeg    = 0,     progPaused = false;
-  let pendProy   = "",    pendNotas  = "", pendDur  = 0;
+  let pendProy   = "",    pendNotas  = "", pendDur  = 0, pendObjetivo = "";
 
   /* ========= HELPERS ========= */
   const pad = n => n.toString().padStart(2,"0");
@@ -267,7 +267,7 @@
            `${pad(f.getHours())}:${pad(f.getMinutes())}`;
   }
 
-  function enviarWebhook(p,n,d,r){
+  function enviarWebhook(p,n,d,r,o){
     fetch(webhook,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -276,6 +276,7 @@
         proyecto:p,
         notas_before: n || "",
         notas_after:  r || "",
+        objetivo_general: o || "",
         duracion_segundos:d,
         duracion_horas:fmt(d),
         terminado_en:formatearFecha(new Date())
@@ -283,13 +284,14 @@
     });
   }
 
-  function showResult(p,n,d,r){
+  function showResult(p,n,d,r,o=""){
     result.innerHTML =
       `<h3>Resumen enviado</h3>
        <p><strong>Proyecto:</strong> ${p}</p>
        <p><strong>Tiempo:</strong> ${fmt(d)}</p>`+
       (n ? `<p><strong>notas_before:</strong> ${n}</p>` : "")+
-      (r ? `<p><strong>notas_after:</strong> ${r}</p>` : "");
+      (r ? `<p><strong>notas_after:</strong> ${r}</p>` : "")+
+      (o ? `<p><strong>Objetivo:</strong> ${o}</p>` : "");
   }
   /* ========= NAVEGACIÓN ENTRE MODOS ========= */
   function seleccionarModo(m){
@@ -462,10 +464,11 @@
     );
   }
   /* ========= MODAL & ENVÍO ========= */
-  function openModal(p,n,d){
+  function openModal(p,n,d,o){
     pendProy  = p;
     pendNotas = n;
     pendDur   = d;
+    pendObjetivo  = o;
 
     confirmSend.style.display   = "flex";
     resumenInput.style.display  = "none";
@@ -484,10 +487,10 @@
 
   function sendNow(withResumen){
     const resumen = withResumen ? resumenInput.value.trim() : "";
-    enviarWebhook(pendProy, pendNotas, pendDur, resumen);
+    enviarWebhook(pendProy, pendNotas, pendDur, resumen, pendObjetivo);
     confirmSend.style.display = "none";
     contador.textContent      = "Enviado ✅";
-    showResult(pendProy, pendNotas, pendDur, resumen);
+    showResult(pendProy, pendNotas, pendDur, resumen, pendObjetivo);
   }
 
   /* ========= CARGA DINÁMICA DE SELECTS ========= */
